@@ -4,4 +4,16 @@ For our generalize hotel management this repository contains backend infrastruct
 
 Language: JavaScript
 
+## How to install and run?
+
+```powershell
+npm install --force
+```
+
+It's stupid due to conflicts between serverless-http (3.2.0) and serverless (14.0x)
+
+```powershell
+serverless offline
+```
+
 Written by Kenneth Obsequio (@lash0000)
