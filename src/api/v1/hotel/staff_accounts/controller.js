@@ -4,7 +4,7 @@
 
 const mongoose = require('mongoose');
 const StaffAccount = require('./model');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10;
 
 // Ensure proper database name usage in connection
