@@ -16,6 +16,17 @@ provider:
   environment:
     MONGODB_URI: ${env:MONGODB_URI}
 
+# Package configuration (This is already save my life ^^)
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - test/**
+    - .git/**
+    - .vscode/**
+    - venv/**
+    - coverage/**
+
 # If this does not work thru production DEADD!!!
 functions:
   ${file(./src/api/v1/hotel/staff_accounts/serverless.yml):functions}
