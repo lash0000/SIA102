@@ -3,7 +3,7 @@ org: lash0000
 # "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: gen-hotel
 # "service" is the name of this project. This will also be added to your AWS resource names.
-service: sia102-mongo-aws
+service: sia-mongo
 
 plugins:
   - serverless-dotenv-plugin
@@ -21,7 +21,6 @@ provider:
 package:
   individually: true
   exclude:
-    - node_modules/**
     - test/**
     - .git/**
     - .vscode/**
@@ -32,18 +31,4 @@ package:
 functions:
   ${file(./src/api/v1/hotel/staff_accounts/serverless.yml):functions}
 
-# Enable CORS globally for HTTP API
-custom:
-  apiGateway:
-    cors:
-      allowedOrigins:
-        - "*"
-      allowedHeaders:
-        - Content-Type
-        - Authorization
-      allowedMethods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-      allowCredentials: false
+# Enable CORS globally for HTTP API (disable ko muna)

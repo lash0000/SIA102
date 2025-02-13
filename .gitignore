@@ -1,8 +1,8 @@
-# essential things :D
+# essential things
 
 node_modules
 .serverless
-package-lock.json
+yarn.lock
+undefined
 .env
 .env.local
-undefined
