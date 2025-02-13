@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
         project_overview: "This empowers AWS MongoDB we will use AWS S3 (Alternative), AWS SNS or AWS SQS if applicable sooner.",
         project_type: "Proprietary based because someday we will control you!",
         version: "1.0.0",
-        api_base_url: "/api/v1/hotel/<route>",
+        api_base_url: "/api/v1/hotel/{route}",
         description: "This API handles staff accounts and various hotel management use-cases.",
         available_routes: [
             "/api/v1/hotel/staff_accounts",
