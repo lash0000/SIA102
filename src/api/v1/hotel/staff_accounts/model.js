@@ -104,8 +104,8 @@ const education_attainment = new mongoose.Schema({
 }, { _id: false });
 
 const educationStructureSchema = new mongoose.Schema({
-    tertiary_education: { type: educationAttainmentSchema, required: false },
-    secondary_education: { type: educationAttainmentSchema, required: false }
+    tertiary_education: { type: education_attainment, required: false },
+    secondary_education: { type: education_attainment, required: false }
 }, { _id: false });
 
 // ACTUAL SCHEMA
