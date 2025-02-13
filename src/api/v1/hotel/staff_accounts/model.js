@@ -95,10 +95,17 @@ const fullAddress = new mongoose.Schema({
     postalcode: { type: Number, required: false },
 }, { _id: false });
 
+// ARRAY OF OBJECT (EXAMPLE) => Has two nodes.
+
 const education_attainment = new mongoose.Schema({
     school_name: { type: String, required: false },
     graduated_year: { type: Number, required: false },
     started_year: { type: Number, required: false },
+}, { _id: false });
+
+const educationStructureSchema = new mongoose.Schema({
+    tertiary_education: { type: educationAttainmentSchema, required: false },
+    secondary_education: { type: educationAttainmentSchema, required: false }
 }, { _id: false });
 
 // ACTUAL SCHEMA
@@ -136,15 +143,7 @@ const employeeStaffDetails = new mongoose.Schema({
     current_full_address: { type: fullAddress },
     employee_nationality: { type: String, required: false },
     employee_religion: { type: String, required: false },
-    employee_education_attainment: {
-        type: [
-            {
-                tertiary_education: { type: education_attainment, required: false },
-                secondary_education: { type: education_attainment, required: false }
-            }
-        ],
-        required: true
-    },
+    employee_education_attainment: { type: [educationStructureSchema], required: true },
     generated_employee_date_added: { type: Date, default: () => new Date().toISOString() }
 })
 
