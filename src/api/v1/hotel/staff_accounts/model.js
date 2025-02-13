@@ -145,7 +145,7 @@ const employeeStaffDetails = new mongoose.Schema({
         ],
         required: true
     },
-    generated_employee_date_added: { type: String, default: Date.now() }
+    generated_employee_date_added: { type: Date, default: () => new Date().toISOString() }
 })
 
 employeeStaffDetails.pre('save', async function (next) {
