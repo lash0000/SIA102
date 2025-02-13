@@ -1,0 +1,21 @@
+# This contains the root page (app.js)
+
+functions:
+  staffAccounts:
+    handler: app.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/{id}
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/{id}
+          method: put
