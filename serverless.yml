@@ -1,0 +1,37 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: lash0000
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: gen-hotel
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: sia102-mongo-aws
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  timeout: 20
+  environment:
+    MONGODB_URI: ${env:MONGODB_URI}
+
+# If this does not work thru production DEADD!!!
+functions:
+  ${file(./src/api/v1/hotel/staff_accounts/serverless.yml):functions}
+
+# Enable CORS globally for HTTP API
+custom:
+  apiGateway:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+      allowCredentials: false
