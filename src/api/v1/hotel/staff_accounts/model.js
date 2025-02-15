@@ -117,6 +117,7 @@ const employeeStaffDetails = new mongoose.Schema({
     },
     email_address: {
         type: String,
+        unique: true,
         required: true,
         validate: {
             validator: function (value) {
@@ -126,6 +127,7 @@ const employeeStaffDetails = new mongoose.Schema({
     },
     phone_number: {
         type: String,
+        unique: true,
         required: true,
         validate: {
             validator: function (value) {
