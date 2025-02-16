@@ -28,7 +28,29 @@ package:
     - coverage/**
 
 # If this does not work thru production DEADD!!!
-functions:
-  ${file(./src/api/v1/hotel/staff_accounts/serverless.yml):functions}
 
-# Enable CORS globally for HTTP API (disable ko muna)
+functions:
+  otpRegistration:
+    handler: src/api/v1/hotel/otp/registration/handler.otpRegistration
+    events:
+      - httpApi:
+          path: /api/v1/hotel/otp/otp-registration
+          method: post
+  staffAccounts:
+    handler: app.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/{id}
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/{id}
+          method: put
