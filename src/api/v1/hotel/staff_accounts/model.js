@@ -64,7 +64,6 @@ const fullName = new mongoose.Schema({
     },
     lastName: {
         type: String,
-        unique: true,
         required: true,
         validate: [
             {
