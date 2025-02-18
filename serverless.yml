@@ -35,7 +35,7 @@ package:
 
 functions:
   otpRegistration:
-    handler: src/api/v1/hotel/otp/registration/controller.otpRegistration
+    handler: app.handler
     events:
       - httpApi:
           path: /api/v1/hotel/otp/otp-registration

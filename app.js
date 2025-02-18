@@ -29,6 +29,8 @@ app.get('/', (req, res) => {
         available_routes: [
             "/api/v1/hotel/staff_accounts",
             "/api/v1/hotel/staff_accounts/{id}",
+            "/api/v1/hotel/otp/forgot-password",
+            "/api/v1/hotel/otp/otp-registration"
         ]
     });
 });
