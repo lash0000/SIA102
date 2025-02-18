@@ -6,3 +6,6 @@ yarn.lock
 undefined
 .env
 .env.local
+
+# google api
+google.json
