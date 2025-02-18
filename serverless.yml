@@ -32,14 +32,8 @@ package:
 # If this does not work thru production DEADD!!!
 
 functions:
-  uploadMedia:
-    handler: src/api/v1/hotel/media_files/controller.CreateFiles
-    events:
-      - httpApi:
-          path: /api/v1/hotel/uploads/media_files
-          method: post
   otpRegistration:
-    handler: src/api/v1/hotel/otp/registration/handler.otpRegistration
+    handler: src/api/v1/hotel/otp/registration/controller.otpRegistration
     events:
       - httpApi:
           path: /api/v1/hotel/otp/otp-registration
