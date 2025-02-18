@@ -18,6 +18,8 @@ provider:
     MONGODB_URI: ${env:MONGODB_URI}
     UPLOADTHING_TOKEN: ${env:UPLOADTHING_TOKEN}
     RESEND_API_KEY: ${env:RESEND_API_KEY}
+    MAIL_USERNAME: ${env:MAIL_USERNAME}
+    MAIL_PASSWORD: ${env:MAIL_PASSWORD}
 
 # Package configuration (This is already save my life ^^)
 package:
