@@ -1,7 +1,6 @@
-const { sendEmail, generateOTP } = require('../../../../../helpers/otp/registration/email_registration');
-const { generateOTPEmail } = require('../../../../../helpers/otp/registration/template');
 const mongoose = require('mongoose');
 const OTP = require('./model');
+const { Send } = require('../../../../../../global/config/NodeMailer');
 
 const connectToDB = async () => {
     try {
@@ -12,6 +11,11 @@ const connectToDB = async () => {
         console.error('MongoDB connection error:', error);
         process.exit(1);
     }
+};
+
+const generateOTP = () => {
+    const otp = Math.floor(100000 + Math.random() * 999999);
+    return otp;
 };
 
 // OTP Registration Controller
@@ -29,10 +33,10 @@ const otpRegistrationController = async (event) => {
         // Connect to DB
         await connectToDB();
 
-        // Generate OTP
+        // Generate 6-digit OTP
         const otp = generateOTP();
 
-        // Set OTP expiration time (e.g., 5 minutes from now)
+        // Set OTP expiration time (5 minutes from now)
         const expirationTime = new Date(Date.now() + 5 * 60 * 1000);
 
         // Store OTP in the database
@@ -44,17 +48,26 @@ const otpRegistrationController = async (event) => {
 
         await otpEntry.save();
 
-        // Prepare Email Content
-        const subject = "Your OTP for Registration";
-        const text = generateOTPEmail(otp); // Plain text version of the email
-
-        // Send Email
-        const response = await sendEmail(email, subject, text);
+        const messageBody = `
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
+                <h2 style="color: #333;">Your One-Time Password (OTP)</h2>
+                <p>Hello,</p>
+                <p>Use the OTP below to complete your registration:</p>
+                <h1 style="letter-spacing: 5px; text-align: center;">${otp}</h1>
+                <p>This OTP is valid for a limited time. Do not share it with anyone.</p>
+                <p>Thank you for choosing SIA102 Hotel Services.</p>
+                <hr>
+                <p style="font-size: 12px; color: #888;">If you didn't request this OTP, please ignore this email.</p>
+            </div>
+        `;
+        
+        // Send OTP email to the provided email address
+        const emailResponse = await Send(email, otp, messageBody);
 
         // Respond with Success
         return {
             statusCode: 200,
-            body: JSON.stringify({ success: true, message: "OTP sent successfully", otp: otp, data: response }),
+            body: JSON.stringify({ success: true, message: "OTP sent successfully", otp: otp, data: emailResponse }),
         };
     } catch (error) {
         console.error(error);
@@ -65,5 +78,4 @@ const otpRegistrationController = async (event) => {
     }
 };
 
-
-module.exports = otpRegistrationController;
+module.exports.otpRegistration = otpRegistrationController;
