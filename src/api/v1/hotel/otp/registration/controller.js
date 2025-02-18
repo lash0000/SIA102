@@ -78,4 +78,4 @@ const otpRegistrationController = async (event) => {
     }
 };
 
-module.exports.otpRegistration = otpRegistrationController;
+module.exports = { otpRegistrationController }
