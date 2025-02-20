@@ -3,6 +3,6 @@ const { otpRegistrationController } = require('./controller');
 const router = express.Router();
 
 // POST route for OTP Registration
-router.post('/otp-registration', otpRegistrationController);
+router.post('/', otpRegistrationController);
 
 module.exports = router;

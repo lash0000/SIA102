@@ -19,14 +19,12 @@ const generateOTP = () => {
 };
 
 // OTP Registration Controller
-const otpRegistrationController = async (event) => {
-    const { email } = JSON.parse(event.body);
+const otpRegistrationController = async (req, res) => {
+    const { email } = req.body;
 
     if (!email) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ message: "Email is required" }),
-        };
+        // Responding with the res object
+        return res.status(400).json({ message: "Email is required" });
     }
 
     try {
@@ -64,18 +62,23 @@ const otpRegistrationController = async (event) => {
         // Send OTP email to the provided email address
         const emailResponse = await Send(email, otp, messageBody);
 
-        // Respond with Success
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ success: true, message: "OTP sent successfully", otp: otp, data: emailResponse }),
-        };
+        // Respond with Success using the res object
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully",
+            otp: otp,
+            data: emailResponse,
+        });
     } catch (error) {
         console.error(error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ success: false, error: error.message }),
-        };
+
+        // Handle errors and send the response back
+        return res.status(500).json({
+            success: false,
+            error: error.message,
+        });
     }
 };
+
 
 module.exports = { otpRegistrationController }
