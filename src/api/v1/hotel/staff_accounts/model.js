@@ -107,6 +107,11 @@ const educationStructureSchema = new mongoose.Schema({
     secondary_education: { type: education_attainment, required: false }
 }, { _id: false });
 
+const securityQuestionSchema = new mongoose.Schema({
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
+}, { _id: false });
+
 // ACTUAL SCHEMA
 
 const employeeStaffDetails = new mongoose.Schema({
@@ -145,6 +150,7 @@ const employeeStaffDetails = new mongoose.Schema({
     employee_nationality: { type: String, required: false },
     employee_religion: { type: String, required: false },
     employee_education_attainment: { type: [educationStructureSchema], required: true },
+    security_question: { type: [securityQuestionSchema], required: false },
     generated_employee_date_added: { type: Date, default: () => new Date().toISOString() }
 })
 
