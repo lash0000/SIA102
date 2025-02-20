@@ -13,13 +13,18 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: ap-southeast-2
-  timeout: 20
   environment:
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+    FILE_UPLOAD_QUEUE_URL: !Ref FileUploadQueue
     MONGODB_URI: ${env:MONGODB_URI}
     UPLOADTHING_TOKEN: ${env:UPLOADTHING_TOKEN}
     RESEND_API_KEY: ${env:RESEND_API_KEY}
     MAIL_USERNAME: ${env:MAIL_USERNAME}
     MAIL_PASSWORD: ${env:MAIL_PASSWORD}
+    CLIENT_EMAIL: ${env:CLIENT_EMAIL}
+    PRIVATE_KEY: ${env:PRIVATE_KEY}
+    PKEY_SCOPES: ${env:PKEY_SCOPES}
+    PKEY_SCOPES_1: ${env:PKEY_SCOPES_1}
 
 # Package configuration (This is already save my life ^^)
 package:
@@ -34,12 +39,26 @@ package:
 # If this does not work thru production DEADD!!!
 
 functions:
+  mediaFiles:
+    handler: app.handler
+    events:
+      - httpApi:
+          path: /api/v1/hotel/uploads/media_files
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/uploads/media_files/{id}
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/uploads/media_files
+          method: post
+
   otpRegistration:
     handler: app.handler
     events:
       - httpApi:
-          path: /api/v1/hotel/otp/otp-registration
+          path: /api/v1/hotel/otp/registration
           method: post
+
   staffAccounts:
     handler: app.handler
     events:
@@ -58,3 +77,10 @@ functions:
       - httpApi:
           path: /api/v1/hotel/staff_accounts/{id}
           method: put
+
+resources:
+  Resources:
+    FileUploadQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sia102-file-upload-queue
