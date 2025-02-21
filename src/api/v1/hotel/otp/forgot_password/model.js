@@ -14,6 +14,6 @@ otpSchema.pre('save', function(next) {
     next();
 });
 
-const OTP = mongoose.model('otp_registrations', otpSchema);
+const OTP = mongoose.model('otp_recovery', otpSchema);
 
 module.exports = OTP;
