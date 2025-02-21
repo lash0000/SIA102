@@ -18,7 +18,19 @@ const generateOTP = () => {
     return otp;
 };
 
-// OTP Registration Controller
+// OTP (GET Retrieval)
+
+const getOTP_Registration = async (req, res) => {
+    try {
+        await connectToDB();
+        const otp_registration_records = await OTP.find();
+        res.status(200).json(otp_registration_records);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching otp data', error });
+    }
+}
+
+// OTP Registration Controller (POST)
 const otpRegistrationController = async (req, res) => {
     const { email } = req.body;
 
@@ -83,4 +95,4 @@ const otpRegistrationController = async (req, res) => {
     }
 };
 
-module.exports = { otpRegistrationController };
+module.exports = { getOTP_Registration, otpRegistrationController };

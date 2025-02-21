@@ -1,8 +1,9 @@
 const express = require('express');
-const { otpRecoveryController } = require('./controller');
+const { getOTP_Recovery, otpRecoveryController } = require('./controller');
 const router = express.Router();
 
-// POST route for OTP Registration
+// Routes for OTP Registration
+router.get('/', getOTP_Recovery);
 router.post('/', otpRecoveryController);
 
 module.exports = router;
