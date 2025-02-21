@@ -19,7 +19,7 @@ const generateOTP = () => {
 };
 
 // OTP Registration Controller
-const otpRegistrationController = async (req, res) => {
+const otpRecoveryController = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
@@ -51,7 +51,7 @@ const otpRegistrationController = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
                     <h2 style="color: #333;">Your One-Time Password (OTP)</h2>
                     <p>Hello,</p>
-                    <p>Use the OTP below to complete your registration:</p>
+                    <p>Use the OTP below to proceed with account recovery:</p>
                     <h1 style="letter-spacing: 5px; text-align: center;">${otp}</h1>
                     <p>This OTP is valid for a limited time. Do not share it with anyone.</p>
                     <p>Thank you for choosing SIA102 Hotel Services.</p>
@@ -83,4 +83,4 @@ const otpRegistrationController = async (req, res) => {
     }
 };
 
-module.exports = { otpRegistrationController };
+module.exports = { otpRecoveryController };
