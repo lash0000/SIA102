@@ -61,6 +61,7 @@ const createRecord = async (req, res) => {
                 { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
                 { phone_number: employeeRecordData.phone_number },
+                { username: employeeRecordData.username },
             ],
         });
 
@@ -73,6 +74,8 @@ const createRecord = async (req, res) => {
                 duplicateField = 'email_address';
             } else if (duplicateChecks.phone_number === employeeRecordData.phone_number) {
                 duplicateField = 'phone_number';
+            } else if (duplicateChecks.username === employeeRecordData.username) {
+                duplicateField = 'username';
             }
             return res.status(400).json({
                 message: `This employee record account information with ${duplicateField} already exists.`,
