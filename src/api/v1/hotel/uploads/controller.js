@@ -35,11 +35,12 @@ const uploadedById = async (req, res) => {
         await connectToDB();
         const { id } = req.params;
         
-        const employeeRecord = await HotelMediaFiles.findOne({ processed_by_id: id })
-            .populate('processed_by_id');
+        const employeeRecord = await HotelMediaFiles.find({ processed_by_id: id })
+            .populate('processed_by_id', '_id employee_id email_address phone_number employee_name username')
+            .exec();
 
-        if (!employeeRecord) {
-            return res.status(404).json({ message: 'Uploaded by employee record not found' });
+        if (!employeeRecord || employeeRecord.length === 0) {
+            return res.status(404).json({ message: 'No media files found for this employee.' });
         }
 
         res.status(200).json(employeeRecord);
@@ -48,6 +49,8 @@ const uploadedById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching record data', error });
     }
 };
+
+
 
 // POST: (Issue file uploading)
 
