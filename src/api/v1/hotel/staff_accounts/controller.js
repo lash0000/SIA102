@@ -53,15 +53,17 @@ const getRecordById = async (req, res) => {
 
 const createRecord = async (req, res) => {
     try {
-        await connectToDB();
+        await connectToDB();  // Ensure DB connection
         const employeeRecordData = req.body;
 
+        // Duplicate checks, only considering employee_id and email_address now
         const duplicateChecks = await StaffAccount.findOne({
             $or: [
                 { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
-                { phone_number: employeeRecordData.phone_number },
-                { username: employeeRecordData.username },
+                // Uncomment these if needed later
+                // { phone_number: employeeRecordData.phone_number },
+                // { username: employeeRecordData.username },
             ],
         });
 
@@ -72,27 +74,31 @@ const createRecord = async (req, res) => {
                 duplicateField = 'employee_id';
             } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
                 duplicateField = 'email_address';
-            } else if (duplicateChecks.phone_number === employeeRecordData.phone_number) {
-                duplicateField = 'phone_number';
             }
             return res.status(400).json({
                 message: `This employee record account information with ${duplicateField} already exists.`,
             });
         }
 
-        // Hash the password before saving
+        // Validate that password is strong
         if (employeeRecordData.employee_password) {
+            // You can add more validation for password strength here if necessary
             const hashedPassword = await bcrypt.hash(employeeRecordData.employee_password, SALT_ROUNDS);
             employeeRecordData.employee_password = hashedPassword;
+        } else {
+            return res.status(400).json({
+                message: 'Password is required and must be provided.',
+            });
         }
 
+        // Create the new employee record
         const newEmployeeRecord = new StaffAccount(employeeRecordData);
         await newEmployeeRecord.save();
 
-        res.status(201).json({ message: 'Added Employee Record successfully', record: newEmployeeRecord });
+        res.status(201).json({ message: 'Employee record added successfully', record: newEmployeeRecord });
     } catch (error) {
+        // Specific error handling for Mongoose validation errors
         if (error.name === 'ValidationError') {
-            // Handle Mongoose validation errors
             const validationErrors = Object.keys(error.errors).map(key => ({
                 field: key,
                 message: error.errors[key].message,
