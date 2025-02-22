@@ -131,7 +131,7 @@ const employeeStaffDetails = new mongoose.Schema({
     },
     phone_number: {
         type: String,
-        unique: true,
+        unique: false, // false muna for now
         required: false,
         validate: {
             validator: function (value) {
@@ -168,12 +168,12 @@ employeeStaffDetails.pre('save', async function (next) {
         return next(error);
     }
 
-    // Check for duplicate phone number
-    const existingPhone = await StaffAccount.findOne({ phone_number: this.phone_number });
-    if (existingPhone) {
-        const error = new Error(`This phone number ${this.phone_number} is already registered.`);
-        return next(error);
-    }
+    // Hide this check for duplicate phone number for now
+    // const existingPhone = await StaffAccount.findOne({ phone_number: this.phone_number });
+    // if (existingPhone) {
+    //     const error = new Error(`This phone number ${this.phone_number} is already registered.`);
+    //     return next(error);
+    // }
 
     next();
 })

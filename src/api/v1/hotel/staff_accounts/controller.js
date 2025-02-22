@@ -60,7 +60,6 @@ const createRecord = async (req, res) => {
             $or: [
                 { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
-                { phone_number: employeeRecordData.phone_number },
                 { username: employeeRecordData.username },
             ],
         });
@@ -72,8 +71,6 @@ const createRecord = async (req, res) => {
                 duplicateField = 'employee_id';
             } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
                 duplicateField = 'email_address';
-            } else if (duplicateChecks.phone_number === employeeRecordData.phone_number) {
-                duplicateField = 'phone_number';
             } else if (duplicateChecks.username === employeeRecordData.username) {
                 duplicateField = 'username';
             }
