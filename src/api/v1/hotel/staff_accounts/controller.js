@@ -60,6 +60,7 @@ const createRecord = async (req, res) => {
             $or: [
                 { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
+                { phone_number: employeeRecordData.phone_number },
                 { username: employeeRecordData.username },
             ],
         });
@@ -71,8 +72,8 @@ const createRecord = async (req, res) => {
                 duplicateField = 'employee_id';
             } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
                 duplicateField = 'email_address';
-            } else if (duplicateChecks.username === employeeRecordData.username) {
-                duplicateField = 'username';
+            } else if (duplicateChecks.phone_number === employeeRecordData.phone_number) {
+                duplicateField = 'phone_number';
             }
             return res.status(400).json({
                 message: `This employee record account information with ${duplicateField} already exists.`,
