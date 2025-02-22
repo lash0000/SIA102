@@ -59,7 +59,7 @@ const createRecord = async (req, res) => {
         // Duplicate checks, only considering employee_id and email_address now
         const duplicateChecks = await StaffAccount.findOne({
             $or: [
-                { employee_id: employeeRecordData.employee_id },
+                // { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
                 // Uncomment these if needed later
                 // { phone_number: employeeRecordData.phone_number },
@@ -70,11 +70,17 @@ const createRecord = async (req, res) => {
         if (duplicateChecks) {
             let duplicateField;
 
-            if (duplicateChecks.employee_id === employeeRecordData.employee_id) {
-                duplicateField = 'employee_id';
-            } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
+            // if (duplicateChecks.employee_id === employeeRecordData.employee_id) {
+            //     duplicateField = 'employee_id';
+            // } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
+            //     duplicateField = 'email_address';
+            // }
+
+            // idk what happen
+            if (duplicateChecks.email_address === employeeRecordData.email_address) {
                 duplicateField = 'email_address';
             }
+
             return res.status(400).json({
                 message: `This employee record account information with ${duplicateField} already exists.`,
             });
