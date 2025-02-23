@@ -61,9 +61,6 @@ const createRecord = async (req, res) => {
             $or: [
                 // { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
-                // Uncomment these if needed later
-                // { phone_number: employeeRecordData.phone_number },
-                // { username: employeeRecordData.username },
             ],
         });
 

@@ -21,7 +21,6 @@ const isNameLike = (name) => {
     return hasVowel && noExcessiveRepetition;
 };
 
-
 // DECLARATION OF ARRAY OF OBJECTS (or NESTED)
 
 const fullName = new mongoose.Schema({
@@ -155,23 +154,10 @@ const employeeStaffDetails = new mongoose.Schema({
 })
 
 employeeStaffDetails.pre('save', async function (next) {
-    const existingRecord = await StaffAccount.findOne({ employee_id: this.employee_id });
-    if (existingRecord) {
-        const error = new Error(`This employee record ${this.employee_id} already exists. Please try again`);
-        return next(error);
-    }
-
     // Check for duplicate email
     const existingEmail = await StaffAccount.findOne({ email_address: this.email_address });
     if (existingEmail) {
         const error = new Error(`This email ${this.email_address} is already registered.`);
-        return next(error);
-    }
-
-    // Check for duplicate phone number
-    const existingPhone = await StaffAccount.findOne({ phone_number: this.phone_number });
-    if (existingPhone) {
-        const error = new Error(`This phone number ${this.phone_number} is already registered.`);
         return next(error);
     }
 
