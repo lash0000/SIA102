@@ -132,7 +132,6 @@ const employeeStaffDetails = new mongoose.Schema({
     },
     phone_number: {
         type: String,
-        unique: true,
         required: false,
         validate: {
             validator: function (value) {
