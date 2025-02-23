@@ -133,7 +133,6 @@ const updateRecord = async (req, res) => {
         const duplicateChecks = await StaffAccount.findOne({
             $or: [
                 { email_address: updateData.email_address },
-                { phone_number: updateData.phone_number },
             ],
             employee_id: { $ne: id },
         });
@@ -142,8 +141,6 @@ const updateRecord = async (req, res) => {
             let duplicateField;
             if (duplicateChecks.email_address === updateData.email_address) {
                 duplicateField = 'email_address';
-            } else if (duplicateChecks.phone_number === updateData.phone_number) {
-                duplicateField = 'phone_number';
             }
             return res.status(400).json({
                 message: `This employee record information with ${duplicateField} already exists.`,
