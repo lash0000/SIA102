@@ -135,11 +135,11 @@ const employeeStaffDetails = new mongoose.Schema({
         required: false,
         validate: {
             validator: function (value) {
-                return phoneNumberRegex.test(value);
+                return !value || phoneNumberRegex.test(value);
             },
             message: 'Phone number must start with +63 and contain 10 digits (e.g.,+639123456789).',
         },
-    },
+    },    
     employee_name: { type: fullName, required: true },
     username: { type: String, required: true },
     employee_password: { type: String, required: true },
