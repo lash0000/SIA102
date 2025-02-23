@@ -115,19 +115,21 @@ const createRecord = async (req, res) => {
 
 // PUT METHOD (NEEDS VALIDATION TOO)
 
+// PUT METHOD (NEEDS VALIDATION TOO)
+
 const updateRecord = async (req, res) => {
     try {
         await connectToDB();
         const { id } = req.params;
-        const updateData = req.body;
+        let updateData = req.body;
 
         // Check if the account exists
         const existingRecord = await StaffAccount.findOne({ employee_id: id });
         if (!existingRecord) {
-            return res.status(404).json({ message: 'This employee record cannot found' });
+            return res.status(404).json({ message: 'This employee record cannot be found' });
         }
 
-        // Check for duplicate brgy_email or brgy_phone_number
+        // Check for duplicate email or phone number
         const duplicateChecks = await StaffAccount.findOne({
             $or: [
                 { email_address: updateData.email_address },
@@ -148,6 +150,12 @@ const updateRecord = async (req, res) => {
             });
         }
 
+        // Hash the password if it's being updated
+        if (updateData.employee_password) {
+            const hashedPassword = await bcrypt.hash(updateData.employee_password, SALT_ROUNDS);
+            updateData.employee_password = hashedPassword;
+        }
+
         // Update data
         const updatedRecord = await StaffAccount.findOneAndUpdate(
             { employee_id: id },
@@ -166,10 +174,10 @@ const updateRecord = async (req, res) => {
             }));
             res.status(400).json({ message: 'Validation Error', errors: validationErrors });
         } else {
-            res.status(500).json({ message: 'Error updating barangay account information', error });
+            res.status(500).json({ message: 'Error updating employee record', error });
         }
     }
-}
+};
 
 module.exports = {
     getAllRecords, getRecordById, createRecord, updateRecord
