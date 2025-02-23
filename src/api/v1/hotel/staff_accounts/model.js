@@ -3,6 +3,7 @@
 */
 
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 
 // HELPERS 
 
@@ -116,8 +117,8 @@ const securityQuestionSchema = new mongoose.Schema({
 
 const employeeStaffDetails = new mongoose.Schema({
     employee_id: {
-        type: Number,
-        default: Math.floor(Math.random() * 8888888889) + 1111111111,
+        type: String,
+        default: uuidv4,
     },
     email_address: {
         type: String,
