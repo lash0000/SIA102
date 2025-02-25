@@ -1,37 +1,51 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
+const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
-const BUCKET_NAME = process.env.S3_BUCKET_NAME;  // Set this in your environment variables
-
-// Upload files to S3
-const uploadFile = async (fileObject) => {
+// Upload files to S3 dynamically based on the folderName
+const uploadFile = async (fileObject, folderName) => {
     try {
-        const fileName = `${Date.now()}-${fileObject.originalname}`;  // Unique file name
-        const fileBuffer = fileObject.buffer; // Convert base64 to buffer
+        const folder = folderName || 'random_folder';
+        const fileName = `${folder}/${Date.now()}-${fileObject.originalname}`;
+        const fileBuffer = fileObject.buffer;
 
         const params = {
             Bucket: BUCKET_NAME,
             Key: fileName,
             Body: fileBuffer,
-            ContentType: fileObject.mimetype,  // Corrected here to use `mimetype`
+            ContentType: fileObject.mimetype,
         };
 
-        // Upload file to S3 using s3.upload
-        const uploadResult = await s3.upload(params).promise(); // Corrected this line
-        console.log("S3 Upload Result:", uploadResult);
-        
-        return uploadResult; // Returning the result of the S3 upload
+        // Using multi-part upload if the file is large (e.g., >10MB)
+        if (fileBuffer.length > 10485760) { // 10MB
+            const multipartUploadParams = {
+                Bucket: BUCKET_NAME,
+                Key: fileName,
+                Body: fileBuffer,
+                ContentType: fileObject.mimetype,
+                PartSize: 10 * 1024 * 1024, // 10MB parts
+                QueueSize: 5, // Number of parts to upload in parallel
+            };
+            const uploadResult = await s3.upload(multipartUploadParams).promise();
+            console.log("Multipart S3 Upload Result:", uploadResult);
+            return uploadResult;
+        } else {
+            // For smaller files, use a simple upload
+            const uploadResult = await s3.upload(params).promise();
+            console.log("S3 Upload Result:", uploadResult);
+            return uploadResult;
+        }
     } catch (error) {
         console.error("Error uploading file to S3:", error);
         throw error;
     }
 };
 
-// Create a folder in S3 (this is optional, as S3 doesn't have traditional folders)
+// Create folder in S3
 const createFolder = async (folderName) => {
     const params = {
         Bucket: BUCKET_NAME,
-        Key: `${folderName}/`,  // S3 treats any "folder" as a prefix for the file name
+        Key: `${folderName}/`,
     };
 
     try {
@@ -43,4 +57,39 @@ const createFolder = async (folderName) => {
     }
 };
 
-module.exports = { uploadFile, createFolder };
+// Delete file from S3
+const deleteFile = async (fileKey) => {
+    const params = {
+        Bucket: BUCKET_NAME,
+        Key: fileKey,
+    };
+
+    try {
+        const deleteResult = await s3.deleteObject(params).promise();
+        console.log("S3 Delete Result:", deleteResult);
+        return deleteResult;
+    } catch (error) {
+        console.error("Error deleting file from S3:", error);
+        throw error;
+    }
+};
+
+// Generate Pre-signed URL for uploading a file to S3 (idk about this)
+const generate_url = async (fileName, folderName) => {
+    const params = {
+        Bucket: BUCKET_NAME,
+        Key: `${folderName}/${fileName}`,
+        Expires: 60 * 5,
+        ContentType: 'application/octet-stream',
+    };
+
+    try {
+        const url = await s3.getSignedUrlPromise('putObject', params);
+        return url;
+    } catch (error) {
+        console.error("Error generating pre-signed URL:", error);
+        throw error;
+    }
+};
+
+module.exports = { uploadFile, createFolder, deleteFile, generate_url };
