@@ -115,8 +115,6 @@ const createRecord = async (req, res) => {
 
 // PUT METHOD (NEEDS VALIDATION TOO)
 
-// PUT METHOD (NEEDS VALIDATION TOO)
-
 const updateRecord = async (req, res) => {
     try {
         await connectToDB();
