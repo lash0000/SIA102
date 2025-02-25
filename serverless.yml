@@ -35,16 +35,25 @@ package:
 functions:
   mediaFiles:
     handler: app.handler
+    timeout: 28
     events:
       - httpApi:
-          path: /api/v1/hotel/uploads/media_files
+          path: /api/v1/hotel/uploads/employee_records/media_files
           method: get
       - httpApi:
-          path: /api/v1/hotel/uploads/media_files/{id}
+          path: /api/v1/hotel/uploads/employee_records/media_files/{id}
           method: get
       - httpApi:
-          path: /api/v1/hotel/uploads/media_files
+          path: /api/v1/hotel/uploads/employee_records/media_files
           method: post
+      # delete per id
+      - httpApi:
+          path: /api/v1/hotel/uploads/employee_records/media_files/{id}
+          method: delete
+      # delete_all
+      - httpApi:
+          path: /api/v1/hotel/uploads/employee_records/media_files/user/{id}
+          method: delete
 
   otpRecovery:
     handler: app.handler

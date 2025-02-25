@@ -8,8 +8,8 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '500mb' })); 
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 // Enable CORS globally
 app.use(cors());
@@ -23,6 +23,8 @@ app.get('/', (req, res) => {
         project_name: "Welcome to SIA102 - Generalize Hotel Management backend services",
         project_overview: "This empowers AWS MongoDB we will use AWS S3, AWS SNS or AWS SQS if applicable sooner.",
         project_type: "Proprietary based because someday we will control you!",
+        facts: "It's a joke anyway!",
+        source_code: "https://github.com/lash0000/SIA102",
         version: "1.0.0",
         api_base_url: "/api/v1/hotel/{route}",
         description: "This API handles staff accounts and various hotel management use-cases.",
