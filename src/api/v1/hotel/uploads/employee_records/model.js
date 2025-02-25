@@ -10,6 +10,6 @@ const hotelMediaFilesSchema = new mongoose.Schema({
     }],
 });
 
-const HotelMediaFiles = mongoose.model('hotel_media_files', hotelMediaFilesSchema);
+const HotelMediaFiles = mongoose.model('employee_media_files', hotelMediaFilesSchema);
 
 module.exports = HotelMediaFiles;

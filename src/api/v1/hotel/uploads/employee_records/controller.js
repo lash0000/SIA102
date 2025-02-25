@@ -1,9 +1,9 @@
-const { uploadFile } = require("../../../../../global/config/S3");
+const { uploadFile, generate_url, deleteFile } = require("../../../../../../global/config/S3");
 // const { sendMessageToQueue } = require("../../../../../global/config/SQS");
 const mongoose = require('mongoose');
 const HotelMediaFiles = require("./model");
 
-const DOCUMENT_MAX_SIZE = 104857600; // 100 MB limit
+const DOCUMENT_MAX_SIZE = 524288000; // 500 MB limit
 
 const connectToDB = async () => {
     try {
@@ -17,7 +17,6 @@ const connectToDB = async () => {
 };
 
 // GET: (Issue the hotel_media_files schema)
-
 const getAllFiles = async (req, res) => {
     try {
         await connectToDB();
@@ -29,14 +28,13 @@ const getAllFiles = async (req, res) => {
 }
 
 // GET: (Issue who uploaded file via _id)
-
 const uploadedById = async (req, res) => {
     try {
         await connectToDB();
         const { id } = req.params;
-        
+
         const employeeRecord = await HotelMediaFiles.find({ processed_by_id: id })
-            .populate('processed_by_id', '_id employee_id email_address phone_number employee_name username')
+            .populate('processed_by_id', '_id employee_id email_address employee_name username')
             .exec();
 
         if (!employeeRecord || employeeRecord.length === 0) {
@@ -50,16 +48,13 @@ const uploadedById = async (req, res) => {
     }
 };
 
-
-
 // POST: (Issue file uploading)
-
 const uploadFiles = async (req, res) => {
     try {
         await connectToDB();
 
-        const processed_by_id = req.query.processed_by_id;  // processed_by_id from query parameters
-        const files = req.files;  // files are stored in req.files by Multer
+        const processed_by_id = req.query.processed_by_id;
+        const files = req.files;
 
         console.log("Received files:", files); 
 
@@ -70,6 +65,8 @@ const uploadFiles = async (req, res) => {
         const uploadedFiles = [];
         const uploadPromises = []; 
 
+        const folderName = 'employee_records';
+
         for (const file of files) {
             if (file.size > DOCUMENT_MAX_SIZE) {
                 return res.status(400).json({ error: `File ${file.originalname} exceeds the 100 MB limit.` });
@@ -77,14 +74,14 @@ const uploadFiles = async (req, res) => {
 
             console.log("Uploading file:", file.originalname);
 
-            // Upload file to S3 concurrently using Promise.all
+            // Upload file to S3 in the 'employee_records' folder
             uploadPromises.push(
-                uploadFile(file).then(uploadResult => {
+                uploadFile(file, folderName).then(uploadResult => {
                     console.log("S3 Upload Result:", uploadResult);
 
                     const fileMetadata = {
                         file_name: file.originalname,
-                        file_url: uploadResult.Location,  // Store the file's location from S3
+                        file_url: uploadResult.Location,
                         uploaded_date: new Date(),
                     };
 
@@ -117,4 +114,55 @@ const uploadFiles = async (req, res) => {
     }
 };
 
-module.exports = { getAllFiles, uploadFiles, uploadedById }
+// DELETE: (Delete a specific file by ID)
+const deleteFileById = async (req, res) => {
+    try {
+        const { fileKey } = req.params;
+        const deleteResult = await deleteFile(fileKey);
+
+        return res.status(200).json({
+            message: "File deleted successfully",
+            deleteResult: deleteResult,
+        });
+    } catch (error) {
+        console.error("Error deleting file:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+const deleteAllFilesByUser = async (req, res) => {
+    try {
+        const { processed_by_id } = req.params;
+
+        await connectToDB();
+
+        const userFiles = await HotelMediaFiles.find({ processed_by_id });
+
+        if (!userFiles || userFiles.length === 0) {
+            return res.status(404).json({ message: "No files found for this user." });
+        }
+
+        const deletePromises = [];
+        
+        // Loop through each file record and map each file's delete promise
+        userFiles.forEach(fileRecord => {
+            fileRecord.media_files.forEach(file => {
+                deletePromises.push(deleteFile(file.file_url));
+            });
+        });
+
+        // Await all deletions
+        await Promise.all(deletePromises);
+        await HotelMediaFiles.deleteMany({ processed_by_id });
+
+        // Send a success response
+        return res.status(200).json({
+            message: "All files deleted successfully",
+        });
+    } catch (error) {
+        console.error("Error deleting all files:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { getAllFiles, uploadFiles, uploadedById, deleteFileById, deleteAllFilesByUser }
