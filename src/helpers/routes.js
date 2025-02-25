@@ -4,7 +4,7 @@ const express = require('express');
 const employeeRecords = require('../api/v1/hotel/staff_accounts/routes');
 const OTPRegistration = require('../api/v1/hotel/otp/registration/routes');
 const OTPRecovery = require('../api/v1/hotel/otp/forgot_password/routes');
-const uploadRoutes = require('../api/v1/hotel/uploads/routes');
+const uploadRoutes = require('../api/v1/hotel/uploads/helpers');
 
 const router = express.Router();
 
