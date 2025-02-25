@@ -1,4 +1,4 @@
-const { uploadFile, generate_url, deleteFile } = require("../../../../../../global/config/S3");
+const { uploadFile, deleteFile } = require("../../../../../../global/config/S3");
 // const { sendMessageToQueue } = require("../../../../../global/config/SQS");
 const mongoose = require('mongoose');
 const HotelMediaFiles = require("./model");
@@ -114,15 +114,35 @@ const uploadFiles = async (req, res) => {
     }
 };
 
-// DELETE: (Delete a specific file by ID)
+// DELETE: (Delete a specific file by _id)
 const deleteFileById = async (req, res) => {
     try {
-        const { fileKey } = req.params;
-        const deleteResult = await deleteFile(fileKey);
+        const { id } = req.params;
+
+        await connectToDB();
+        const fileRecord = await HotelMediaFiles.findById(id);
+
+        if (!fileRecord) {
+            return res.status(404).json({ message: "File not found." });
+        }
+
+        const folderName = 'employee_records';
+        const deletePromises = [];
+
+        // Loop through the media_files array and delete all associated files
+        fileRecord.media_files.forEach(file => {
+            const fileKey = `${folderName}/${file.file_name}`;
+            console.log("Deleting from S3:", fileKey);
+
+            deletePromises.push(deleteFile(fileKey));
+        });
+
+        // Await all deletions from S3
+        await Promise.all(deletePromises);
+        await HotelMediaFiles.findByIdAndDelete(id);
 
         return res.status(200).json({
-            message: "File deleted successfully",
-            deleteResult: deleteResult,
+            message: "File deleted successfully from S3 and MongoDB",
         });
     } catch (error) {
         console.error("Error deleting file:", error);
@@ -130,12 +150,13 @@ const deleteFileById = async (req, res) => {
     }
 };
 
+
+// This now aligns to uploadFiles func.
 const deleteAllFilesByUser = async (req, res) => {
     try {
         const { processed_by_id } = req.params;
 
         await connectToDB();
-
         const userFiles = await HotelMediaFiles.find({ processed_by_id });
 
         if (!userFiles || userFiles.length === 0) {
@@ -143,21 +164,27 @@ const deleteAllFilesByUser = async (req, res) => {
         }
 
         const deletePromises = [];
-        
-        // Loop through each file record and map each file's delete promise
+        const folderName = 'employee_records';
+
         userFiles.forEach(fileRecord => {
             fileRecord.media_files.forEach(file => {
-                deletePromises.push(deleteFile(file.file_url));
+                const fileKey = `${folderName}/${file.file_name}`;
+                const fullFileUrl = `${process.env.S3_BUCKET_URL}${fileKey}`;
+                console.log("Deleting from S3:", fullFileUrl);
+
+                // Push delete promises to delete files from S3
+                deletePromises.push(deleteFile(fileKey));
             });
         });
 
-        // Await all deletions
+        // Await all deletions from S3
         await Promise.all(deletePromises);
+
+        // Now, delete the metadata from MongoDB for this user
         await HotelMediaFiles.deleteMany({ processed_by_id });
 
-        // Send a success response
         return res.status(200).json({
-            message: "All files deleted successfully",
+            message: "All files deleted successfully from S3 and MongoDB",
         });
     } catch (error) {
         console.error("Error deleting all files:", error);

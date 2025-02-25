@@ -1,12 +1,13 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
+const BASE_S3_URL = process.env.S3_BUCKET_URL;
 
 // Upload files to S3 dynamically based on the folderName
 const uploadFile = async (fileObject, folderName) => {
     try {
         const folder = folderName || 'random_folder';
-        const fileName = `${folder}/${Date.now()}-${fileObject.originalname}`;
+        const fileName = `${folder}/${fileObject.originalname}`;
         const fileBuffer = fileObject.buffer;
 
         const params = {
@@ -17,14 +18,14 @@ const uploadFile = async (fileObject, folderName) => {
         };
 
         // Using multi-part upload if the file is large (e.g., >10MB)
-        if (fileBuffer.length > 10485760) { // 10MB
+        if (fileBuffer.length > 10485760) {
             const multipartUploadParams = {
                 Bucket: BUCKET_NAME,
                 Key: fileName,
                 Body: fileBuffer,
                 ContentType: fileObject.mimetype,
-                PartSize: 10 * 1024 * 1024, // 10MB parts
-                QueueSize: 5, // Number of parts to upload in parallel
+                PartSize: 10 * 1024 * 1024,
+                QueueSize: 5,
             };
             const uploadResult = await s3.upload(multipartUploadParams).promise();
             console.log("Multipart S3 Upload Result:", uploadResult);
@@ -92,4 +93,8 @@ const generate_url = async (fileName, folderName) => {
     }
 };
 
-module.exports = { uploadFile, createFolder, deleteFile, generate_url };
+const full_bucket_url = (fileName, folderName) => {
+    return `${BASE_S3_URL}${folderName}/${fileName}`;
+};
+
+module.exports = { uploadFile, createFolder, deleteFile, generate_url, full_bucket_url };
