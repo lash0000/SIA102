@@ -18,11 +18,11 @@ const Send = async (email, emailBody) => {
     try {
         const result = await transporter.sendMail({
             from: {
-                name: "StaySuite | Support",
+                name: "StaySuite | Services",
                 address: process.env.MAIL_USERNAME,
             },
             to: email,
-            subject: "One Time Password",
+            subject: "StaySuite | Support - Inbox",
             html: emailBody,
         });
 

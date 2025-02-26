@@ -35,7 +35,7 @@ const generateRandomPassword = () => {
 
 const getAllRecords = async (req, res) => {
     try {
-        await connectToDB(); // Ensure DB connection
+        await connectToDB();
         const employee_records = await StaffAccount.find();
         res.status(200).json(employee_records);
     } catch (error) {
@@ -47,9 +47,10 @@ const getAllRecords = async (req, res) => {
 
 const getRecordById = async (req, res) => {
     try {
-        await connectToDB(); // Ensure DB connection
+        await connectToDB();
         const { id } = req.params;
-        const employeeRecord = await StaffAccount.findOne({ employee_id: id });
+        const employeeRecord = await StaffAccount.findOne({ employee_id: id })
+            .populate('created_by', '_id employee_id email_address employee_name username');
 
         if (!employeeRecord) {
             return res.status(404).json({ message: 'Employee record not found' });
@@ -65,25 +66,18 @@ const getRecordById = async (req, res) => {
 
 const createRecord = async (req, res) => {
     try {
-        await connectToDB();  // Ensure DB connection
+        await connectToDB();
         const employeeRecordData = req.body;
 
         // Duplicate checks, only considering employee_id and email_address now
         const duplicateChecks = await StaffAccount.findOne({
             $or: [
-                // { employee_id: employeeRecordData.employee_id },
                 { email_address: employeeRecordData.email_address },
             ],
         });
 
         if (duplicateChecks) {
             let duplicateField;
-
-            // if (duplicateChecks.employee_id === employeeRecordData.employee_id) {
-            //     duplicateField = 'employee_id';
-            // } else if (duplicateChecks.email_address === employeeRecordData.email_address) {
-            //     duplicateField = 'email_address';
-            // }
 
             // idk what happen
             if (duplicateChecks.email_address === employeeRecordData.email_address) {
@@ -97,7 +91,6 @@ const createRecord = async (req, res) => {
 
         // Validate that password is strong
         if (employeeRecordData.employee_password) {
-            // You can add more validation for password strength here if necessary
             const hashedPassword = await bcrypt.hash(employeeRecordData.employee_password, SALT_ROUNDS);
             employeeRecordData.employee_password = hashedPassword;
         } else {
@@ -125,10 +118,8 @@ const createRecord = async (req, res) => {
     }
 }
 
-// POST METHOD (NEEDS VALIDATION for ADD NEW STAFF)
-
 const create_TemporaryRecord = async (req, res) => {
-    const { email_address } = req.body;
+    const { email_address, processed_by_id } = req.body;
 
     try {
         await connectToDB();
@@ -159,6 +150,9 @@ const create_TemporaryRecord = async (req, res) => {
         const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
         employeeRecordData.employee_password = hashedPassword;
 
+        // Make sure to set created_by to the processed_by_id (or any field)
+        employeeRecordData.created_by = processed_by_id;
+
         // Create the new employee record
         const newEmployeeRecord = new StaffAccount(employeeRecordData);
         await newEmployeeRecord.save();
@@ -166,13 +160,13 @@ const create_TemporaryRecord = async (req, res) => {
         const emailBody = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
             <h2 style="color: #333;">Account Registration</h2>
-            <p>Hello,</p>
-            <p>Your account has been created by someone successfully.</p>
+            <p>Hello, this is your account credentials to log in</p>
+            <p>Email: <strong>${email_address}<strong></p>
             <p>Your temporary password is: <strong>${plainPassword}</strong></p>
             <p>This account does not have any expirations but we advise for you to change it as soon as possible.</p>
             <p>Thank you for choosing StaySuite Hotel Services.</p>
             <hr>
-            <p style="font-size: 12px; color: #888;">This process / request was made by one of our staffs / managers</p>
+            <p style="font-size: 12px; color: #888;">This process / request was made by one of our staff members / managers</p>
         </div>
         `;
 
