@@ -50,7 +50,7 @@ const getRecordById = async (req, res) => {
         await connectToDB();
         const { id } = req.params;
         const employeeRecord = await StaffAccount.findOne({ employee_id: id })
-            .populate('created_by', '_id employee_id email_address employee_name username');
+            .populate('created_by', '_id employee_id email_address employee_name username employee_role');
 
         if (!employeeRecord) {
             return res.status(404).json({ message: 'Employee record not found' });
