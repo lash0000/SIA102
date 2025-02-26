@@ -18,7 +18,7 @@ const Send = async (email, emailBody) => {
     try {
         const result = await transporter.sendMail({
             from: {
-                name: "StaySuite | Account",
+                name: "StaySuite | Support",
                 address: process.env.MAIL_USERNAME,
             },
             to: email,

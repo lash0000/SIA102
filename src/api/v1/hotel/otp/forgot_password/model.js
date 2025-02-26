@@ -9,7 +9,7 @@ const otpSchema = new mongoose.Schema({
 
 // Method to set expiration to 5 minutes from current time in GMT +8 (Taipei Standard Time)
 otpSchema.pre('save', function(next) {
-    const currentTimeInGMT8 = moment.tz('Asia/Taipei').toDate();
+    const currentTimeInGMT8 = moment.tz('Asia/Manila').toDate();
     this.expiration = moment(currentTimeInGMT8).add(5, 'minutes').toDate();
     next();
 });

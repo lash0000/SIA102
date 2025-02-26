@@ -4,6 +4,7 @@
 
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
+const moment = require('moment-timezone');
 
 // HELPERS 
 
@@ -119,6 +120,11 @@ const employeeStaffDetails = new mongoose.Schema({
         type: String,
         default: uuidv4,
     },
+    created_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'hotel_employees_staff_records',
+        required: false,
+    },
     email_address: {
         type: String,
         unique: true,
@@ -138,7 +144,7 @@ const employeeStaffDetails = new mongoose.Schema({
             },
             message: 'Phone number must start with +63 and contain 10 digits (e.g.,+639123456789).',
         },
-    },    
+    },
     employee_name: { type: fullName, required: true },
     username: { type: String, required: true },
     employee_password: { type: String, required: true },
@@ -150,7 +156,10 @@ const employeeStaffDetails = new mongoose.Schema({
     employee_religion: { type: String, required: false },
     employee_education_attainment: { type: [educationStructureSchema], required: true },
     security_question: { type: [securityQuestionSchema], required: false },
-    generated_employee_date_added: { type: Date, default: () => new Date().toISOString() }
+    generated_employee_date_added: {
+        type: Date,
+        default: () => moment.tz('Asia/Manila').toDate()
+    }
 })
 
 employeeStaffDetails.pre('save', async function (next) {

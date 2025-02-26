@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const StaffAccount = require('./model');
 const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10;
+const { Send } = require('../../../../../global/config/NodeMailer');
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -17,6 +18,17 @@ const connectToDB = async () => {
         console.error('MongoDB connection error:', error);
         process.exit(1);
     }
+};
+
+const generateRandomPassword = () => {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    const passwordLength = Math.floor(Math.random() * (20 - 8 + 1)) + 8;
+
+    for (let i = 0; i < passwordLength; i++) {
+        password += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return password;
 };
 
 // GET METHOD (BY ALL)
@@ -113,6 +125,77 @@ const createRecord = async (req, res) => {
     }
 }
 
+// POST METHOD (NEEDS VALIDATION for ADD NEW STAFF)
+
+const create_TemporaryRecord = async (req, res) => {
+    const { email_address } = req.body;
+
+    try {
+        await connectToDB();
+        const employeeRecordData = req.body;
+
+        const duplicateChecks = await StaffAccount.findOne({
+            $or: [
+                { email_address: employeeRecordData.email_address },
+            ],
+        });
+
+        if (duplicateChecks) {
+            let duplicateField;
+
+            if (duplicateChecks.email_address === employeeRecordData.email_address) {
+                duplicateField = 'email_address';
+            }
+
+            return res.status(400).json({
+                message: `This employee record account information with ${duplicateField} already exists.`,
+            });
+        }
+
+        // Generate random plain password
+        const plainPassword = generateRandomPassword();
+
+        // Validate that password is strong
+        const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+        employeeRecordData.employee_password = hashedPassword;
+
+        // Create the new employee record
+        const newEmployeeRecord = new StaffAccount(employeeRecordData);
+        await newEmployeeRecord.save();
+
+        const emailBody = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
+            <h2 style="color: #333;">Account Registration</h2>
+            <p>Hello,</p>
+            <p>Your account has been created by someone successfully.</p>
+            <p>Your temporary password is: <strong>${plainPassword}</strong></p>
+            <p>This account does not have any expirations but we advise for you to change it as soon as possible.</p>
+            <p>Thank you for choosing StaySuite Hotel Services.</p>
+            <hr>
+            <p style="font-size: 12px; color: #888;">This process / request was made by one of our staffs / managers</p>
+        </div>
+        `;
+
+        await Send(email_address, emailBody);
+
+        res.status(201).json({
+            message: 'Employee record added successfully',
+            record: newEmployeeRecord,
+            plainPassword: plainPassword,
+        });
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.keys(error.errors).map(key => ({
+                field: key,
+                message: error.errors[key].message,
+            }));
+            res.status(400).json({ message: 'Validation Error', errors: validationErrors });
+        } else {
+            res.status(500).json({ message: 'Error adding employee record', error: error.message });
+        }
+    }
+};
+
 // PUT METHOD (NEEDS VALIDATION TOO)
 
 const updateRecord = async (req, res) => {
@@ -155,7 +238,7 @@ const updateRecord = async (req, res) => {
         const updatedRecord = await StaffAccount.findOneAndUpdate(
             { employee_id: id },
             updateData,
-            { new: true, runValidators: true } // Return the updated document and run validations
+            { new: true, runValidators: true }
         );
 
         res.status(200).json({ message: 'This Employee Record data was updated successfully', record: updatedRecord });
@@ -175,5 +258,5 @@ const updateRecord = async (req, res) => {
 };
 
 module.exports = {
-    getAllRecords, getRecordById, createRecord, updateRecord
+    getAllRecords, getRecordById, createRecord, updateRecord, create_TemporaryRecord
 }
