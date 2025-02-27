@@ -4,10 +4,12 @@
 
 const mongoose = require('mongoose');
 const StaffAccount = require('./model');
-const AuditLogs = require('../audit_logs/model');
+const { AuditLogs } = require('../audit_logs/model');
 const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10;
 const { Send } = require('../../../../../global/config/NodeMailer');
+const requestIp = require('request-ip');
+const platform = require('platform');
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -175,11 +177,16 @@ const create_TemporaryRecord = async (req, res) => {
         await Send(email_address, emailBody);
 
         // Log the action in the Audit Logs
+        const ipAddress = requestIp.getClientIp(req);
+        const deviceInfo = getDeviceInfo();
+
         const auditLogData = {
             issued_by: processed_by_id,
             action: action,
-            comments: comments
-        }
+            comments: comments,
+            ip_address: ipAddress,
+            device_info: deviceInfo,
+        };
 
         const newAuditLog = new AuditLogs(auditLogData);
         await newAuditLog.save();
@@ -262,6 +269,21 @@ const updateRecord = async (req, res) => {
         }
     }
 };
+
+// HELPERS (THE REST)
+
+function getDeviceInfo() {
+    const info = platform;
+    return {
+        platform_name: info.name || 'Unidentified',
+        platform_version: info.version || 'Unidentified',
+        platform_product: info.product || 'Unidentified',
+        platform_manufacturer: info.manufacturer || 'Unidentified',
+        platform_layout: info.layout || 'Unidentified',
+        platform_os: info.os.family || 'Unidentified',
+        platform_description: info.description || 'Unidentified'
+    };
+}
 
 module.exports = {
     getAllRecords, getRecordById, createRecord, updateRecord, create_TemporaryRecord

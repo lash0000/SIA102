@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-const ipify = require('ipify');
+const requestIp = require('request-ip'); // import request-ip
 const platform = require('platform');
 const mongoose = require('mongoose');
 
@@ -31,7 +31,7 @@ const auditTrailLog = new mongoose.Schema({
     },
     ip_address: {
         type: String,
-        default: async () => await getIpAddress()
+        required: true
     },
     device_info: {
         type: platformDevice,
@@ -47,16 +47,7 @@ const auditTrailLog = new mongoose.Schema({
     }
 });
 
-async function getIpAddress() {
-    try {
-        const ip = await ipify();
-        return ip;
-    } catch (error) {
-        console.error("Error fetching IP address:", error);
-        return null;
-    }
-}
-
+// Function to get Device Info (platform)
 function getDeviceInfo() {
     const info = platform;
     return {
@@ -70,5 +61,16 @@ function getDeviceInfo() {
     };
 }
 
+// Function to get IP address from the request object
+async function getIpAddress(req) {
+    try {
+        const ip = requestIp.getClientIp(req);
+        return ip || 'Unknown IP';
+    } catch (error) {
+        console.error("Error fetching IP address:", error);
+        return 'Unknown IP';
+    }
+}
+
 const AuditLogs = mongoose.model('audit_trail_logs', auditTrailLog);
-module.exports = AuditLogs;
+module.exports = { AuditLogs, getIpAddress };

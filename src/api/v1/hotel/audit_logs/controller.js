@@ -28,13 +28,28 @@ const getAllLogs = async (req, res) => {
     }
 }
 
-// POST METHOD
 
+// POST METHOD for creating audit logs
 const issueLogs = async (req, res) => {
     try {
         await connectToDB();
-        const AuditLogData = req.body;
 
+        // Get the IP address using request-ip
+        const ipAddress = requestIp.getClientIp(req);  // This will fetch the IP address from the request headers
+
+        // Get device info from platform.js
+        const deviceInfo = getDeviceInfo();
+
+        // Prepare audit log data
+        const AuditLogData = {
+            issued_by: req.body.processed_by_id,
+            action: req.body.action,
+            comments: req.body.comments,
+            ip_address: ipAddress,
+            device_info: deviceInfo,
+        };
+
+        // Create a new audit log entry
         const newAuditLog = new AuditLogs(AuditLogData);
         await newAuditLog.save();
 
