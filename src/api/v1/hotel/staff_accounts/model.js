@@ -146,7 +146,7 @@ const employeeStaffDetails = new mongoose.Schema({
         },
     },
     employee_name: { type: fullName, required: true },
-    username: { type: String, required: true },
+    username: { type: String, required: false },
     employee_password: { type: String, required: true },
     employee_role: { type: [String], required: true },
     employee_work_shift: { type: String, required: false },
