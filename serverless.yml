@@ -100,3 +100,14 @@ functions:
       - httpApi:
           path: /api/v1/hotel/staff_accounts/{id}
           method: put
+  
+  auditLogs:
+    handler: app.handler
+    timeout: 28
+    events:
+      - httpApi:
+          path: /api/v1/hotel/audit_logs
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/audit_logs
+          method: post

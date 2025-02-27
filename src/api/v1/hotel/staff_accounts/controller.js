@@ -4,6 +4,7 @@
 
 const mongoose = require('mongoose');
 const StaffAccount = require('./model');
+const AuditLogs = require('../audit_logs/model');
 const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10;
 const { Send } = require('../../../../../global/config/NodeMailer');
@@ -119,7 +120,7 @@ const createRecord = async (req, res) => {
 }
 
 const create_TemporaryRecord = async (req, res) => {
-    const { email_address, processed_by_id } = req.body;
+    const { email_address, processed_by_id, action, comments } = req.body;
 
     try {
         await connectToDB();
@@ -170,10 +171,21 @@ const create_TemporaryRecord = async (req, res) => {
         </div>
         `;
 
+        // Issue a email sending.
         await Send(email_address, emailBody);
 
+        // Log the action in the Audit Logs
+        const auditLogData = {
+            issued_by: processed_by_id,
+            action: action,
+            comments: comments
+        }
+
+        const newAuditLog = new AuditLogs(auditLogData);
+        await newAuditLog.save();
+
         res.status(201).json({
-            message: 'Employee record added successfully',
+            message: 'Employee record with audit record was added successfully',
             record: newEmployeeRecord,
             plainPassword: plainPassword,
         });
