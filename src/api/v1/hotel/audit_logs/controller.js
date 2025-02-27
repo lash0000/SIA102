@@ -3,7 +3,9 @@
 */
 
 const mongoose = require('mongoose');
-const AuditLogs = require('./model');
+const { AuditLogs } = require('./model');
+const requestIp = require('request-ip');
+const platform = require('platform');
 
 const connectToDB = async () => {
     try {
@@ -35,7 +37,7 @@ const issueLogs = async (req, res) => {
         await connectToDB();
 
         // Get the IP address using request-ip
-        const ipAddress = requestIp.getClientIp(req);  // This will fetch the IP address from the request headers
+        const ipAddress = requestIp.getClientIp(req);
 
         // Get device info from platform.js
         const deviceInfo = getDeviceInfo();
@@ -65,6 +67,21 @@ const issueLogs = async (req, res) => {
             res.status(500).json({ message: 'Error adding employee record', error: error.message });
         }
     }
+}
+
+// HELPERS (THE REST)
+
+function getDeviceInfo() {
+    const info = platform;
+    return {
+        platform_name: info.name || 'Unidentified',
+        platform_version: info.version || 'Unidentified',
+        platform_product: info.product || 'Unidentified',
+        platform_manufacturer: info.manufacturer || 'Unidentified',
+        platform_layout: info.layout || 'Unidentified',
+        platform_os: info.os.family || 'Unidentified',
+        platform_description: info.description || 'Unidentified'
+    };
 }
 
 module.exports = { getAllLogs, issueLogs }
