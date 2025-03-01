@@ -128,9 +128,9 @@ const create_TemporaryRecord = async (req, res) => {
     try {
         await connectToDB();
 
-        // Since multipart/form-data is used, extract fields correctly
+        // Extract fields correctly from multipart/form-data
         const { email_address, processed_by_id, action, comments } = req.body;
-        const issued_by = processed_by_id; // Assign issued_by from processed_by_id
+        const issued_by = processed_by_id;
 
         // Ensure required fields exist
         if (!email_address || !processed_by_id) {
@@ -162,6 +162,9 @@ const create_TemporaryRecord = async (req, res) => {
 
         const newEmployeeRecord = new StaffAccount(employeeRecordData);
         await newEmployeeRecord.save();
+
+        // **Automatically set `for_by` as the new employee's _id**
+        const for_by = newEmployeeRecord._id;
 
         // Send email with login credentials
         const emailBody = `
@@ -211,8 +214,8 @@ const create_TemporaryRecord = async (req, res) => {
             // Save media file record if files were uploaded
             if (uploadedFiles.length > 0) {
                 const mediaFiles = new HotelMediaFiles({
-                    processed_by_id: newEmployeeRecord._id,
-                    for_by: req.body.for_by || null, // Optional field
+                    processed_by_id: newEmployeeRecord._id, // The staff/manager who issued the file
+                    for_by: for_by, // Automatically assigned as the new employee's _id
                     media_files: uploadedFiles,
                 });
                 await mediaFiles.save();
