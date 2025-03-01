@@ -125,44 +125,45 @@ const createRecord = async (req, res) => {
 }
 
 const create_TemporaryRecord = async (req, res) => {
-    const { email_address, processed_by_id, action, comments } = req.body;
-
     try {
         await connectToDB();
-        const employeeRecordData = req.body;
 
-        const duplicateChecks = await StaffAccount.findOne({
-            $or: [
-                { email_address: employeeRecordData.email_address },
-            ],
-        });
+        // Since multipart/form-data is used, extract fields correctly
+        const { email_address, processed_by_id, action, comments } = req.body;
+        const issued_by = processed_by_id; // Assign issued_by from processed_by_id
 
+        // Ensure required fields exist
+        if (!email_address || !processed_by_id) {
+            return res.status(400).json({ message: "Missing required fields: email_address or processed_by_id." });
+        }
+
+        // Check for duplicate email
+        const duplicateChecks = await StaffAccount.findOne({ email_address });
         if (duplicateChecks) {
-            let duplicateField;
-
-            if (duplicateChecks.email_address === employeeRecordData.email_address) {
-                duplicateField = 'email_address';
-            }
-
-            return res.status(400).json({
-                message: `This employee record account information with ${duplicateField} already exists.`,
-            });
+            return res.status(400).json({ message: `This email address is already registered.` });
         }
 
         // Generate random plain password
         const plainPassword = generateRandomPassword();
-
-        // Validate that password is strong
         const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-        employeeRecordData.employee_password = hashedPassword;
 
-        // Make sure to set created_by to the processed_by_id (or any field)
-        employeeRecordData.created_by = processed_by_id;
+        // Create Employee Record
+        const employeeRecordData = {
+            email_address,
+            employee_password: hashedPassword,
+            created_by: processed_by_id, // Assign creator
+            employee_name: {
+                firstName: req.body.firstName,
+                middleName: req.body.middleName || null, // Handle optional fields
+                lastName: req.body.lastName,
+                suffix: req.body.suffix || null,
+            }
+        };
 
-        // Create the new employee record
         const newEmployeeRecord = new StaffAccount(employeeRecordData);
         await newEmployeeRecord.save();
 
+        // Send email with login credentials
         const emailBody = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
             <h2 style="color: #333;">Account Registration</h2>
@@ -173,18 +174,16 @@ const create_TemporaryRecord = async (req, res) => {
             <p>Thank you for choosing StaySuite Hotel Services.</p>
             <hr>
             <p style="font-size: 12px; color: #888;">This process / request was made by one of our staff members / managers</p>
-        </div>
-        `;
+        </div>`;
 
-        // Issue a email sending.
         await Send(email_address, emailBody);
 
-        // Log the action in the Audit Logs
+        // Log action in Audit Logs
         const ipAddress = requestIp.getClientIp(req);
         const deviceInfo = getDeviceInfo();
 
         const auditLogData = {
-            issued_by: processed_by_id,
+            issued_by: issued_by, // processed_by_id is now issued_by
             action: action,
             comments: comments,
             ip_address: ipAddress,
@@ -213,7 +212,7 @@ const create_TemporaryRecord = async (req, res) => {
             if (uploadedFiles.length > 0) {
                 const mediaFiles = new HotelMediaFiles({
                     processed_by_id: newEmployeeRecord._id,
-                    for_by: for_by || null,
+                    for_by: req.body.for_by || null, // Optional field
                     media_files: uploadedFiles,
                 });
                 await mediaFiles.save();
@@ -227,15 +226,7 @@ const create_TemporaryRecord = async (req, res) => {
             uploadedFiles: uploadedFiles.length > 0 ? uploadedFiles : "No files uploaded.",
         });
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            const validationErrors = Object.keys(error.errors).map(key => ({
-                field: key,
-                message: error.errors[key].message,
-            }));
-            res.status(400).json({ message: 'Validation Error', errors: validationErrors });
-        } else {
-            res.status(500).json({ message: 'Error adding employee record', error: error.message });
-        }
+        res.status(500).json({ message: "Error adding employee record", error: error.message });
     }
 };
 
