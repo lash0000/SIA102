@@ -1,5 +1,6 @@
 /*
 *   This feature is for Employees Information Management (HRIS)
+*   src/api/v1/hotel/staff_accounts/controller.js
 */
 
 const mongoose = require('mongoose');
@@ -10,6 +11,8 @@ const SALT_ROUNDS = 10;
 const { Send } = require('../../../../../global/config/NodeMailer');
 const requestIp = require('request-ip');
 const platform = require('platform');
+const { uploadFiles } = require('../uploads/employee_records/controller');
+const HotelMediaFiles = require("../uploads/employee_records/model");
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -191,10 +194,37 @@ const create_TemporaryRecord = async (req, res) => {
         const newAuditLog = new AuditLogs(auditLogData);
         await newAuditLog.save();
 
+        // **Upload Employee Image (Optional)**
+        let uploadedFiles = [];
+        if (req.files && req.files.length > 0) {
+            const folderName = "employee_records";
+
+            const uploadPromises = req.files.map(file =>
+                uploadFiles(file, folderName).then(uploadResult => ({
+                    file_name: file.originalname,
+                    file_url: uploadResult.Location,
+                    uploaded_date: new Date(),
+                }))
+            );
+
+            uploadedFiles = await Promise.all(uploadPromises);
+
+            // Save media file record if files were uploaded
+            if (uploadedFiles.length > 0) {
+                const mediaFiles = new HotelMediaFiles({
+                    processed_by_id: newEmployeeRecord._id,
+                    for_by: for_by || null,
+                    media_files: uploadedFiles,
+                });
+                await mediaFiles.save();
+            }
+        }
+
         res.status(201).json({
-            message: 'Employee record with audit record was added successfully',
+            message: "Employee record with audit record was added successfully",
             record: newEmployeeRecord,
             plainPassword: plainPassword,
+            uploadedFiles: uploadedFiles.length > 0 ? uploadedFiles : "No files uploaded.",
         });
     } catch (error) {
         if (error.name === 'ValidationError') {
