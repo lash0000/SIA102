@@ -109,5 +109,8 @@ functions:
           path: /api/v1/hotel/audit_logs
           method: get
       - httpApi:
+          path: /api/v1/hotel/audit_logs/{id}
+          method: get
+      - httpApi:
           path: /api/v1/hotel/audit_logs
           method: post
