@@ -19,35 +19,22 @@ const connectToDB = async () => {
     }
 };
 
-// GET METHOD
-
 const getAllLogs = async (req, res) => {
     try {
         await connectToDB();
-        const audit_log_data = await AuditLogs.find();
+
+        const audit_log_data = await AuditLogs.find()
+            .populate({
+                path: 'issued_by',
+                select: 'employee_id email_address employee_name username employee_role'
+            })
+            .exec();
+
         res.status(200).json(audit_log_data);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching audit record log data', error });
     }
-}
-
-const get_IssueBy = async (req, res) => {
-    try {
-        await connectToDB();
-        const { id } = req.params;
-        const issueBy_record = await StaffAccount.findOne({ employee_id: id })
-            .populate('issued_by', '_id employee_id email_address employee_name username employee_role')
-
-        if (!issueBy_record) {
-            return res.status(404).json({ message: 'Issued by from audit log record unidentified.' });
-        }
-
-        res.status(200).json(issueBy_record);
-    }
-    catch (error) {
-        res.status(500).json({ message: 'Error fetching record data', error });
-    }
-}
+};
 
 // POST METHOD for creating audit logs
 const issueLogs = async (req, res) => {
@@ -102,4 +89,4 @@ function getDeviceInfo() {
     };
 }
 
-module.exports = { getAllLogs, issueLogs, get_IssueBy }
+module.exports = { getAllLogs, issueLogs }
