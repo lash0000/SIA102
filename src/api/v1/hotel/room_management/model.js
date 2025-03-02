@@ -1,0 +1,37 @@
+/*
+*   This feature is for Room Management
+*   This feature will be used for Employees Information Management and Web-based for (Guests)
+*/
+
+//src/api/v1/hotel/room_management/model.js
+const mongoose = require('mongoose');
+const moment = require('moment-timezone');
+// const { uploadFile, deleteFile } = require("../../../../../global/config/S3");
+// const HotelMediaFiles = require('../uploads/room_management/model');
+
+const roomManagementSchema = new mongoose.Schema({
+    room_status: { type: String, required: true },
+    slot_availability: { type: Number, required: true },
+    room_details: [{
+        room_title: { type: String, required: true },
+        room_images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'room_media_files' }],
+        room_availability: {
+            adults: { type: Number, required: true },
+            children: { type: Number, required: true },
+            infants: { type: Number, required: true }
+        },
+        initial_price_per_night: { type: Number, required: true },
+        amenities_offer: [{
+            amenities_name: { type: String, required: true },
+            offer_details: { type: String, required: true }
+        }],
+    }],
+    processed_by_id: { type: mongoose.Schema.Types.ObjectId, ref: 'hotel_employees_staff_records', required: true },
+    generated_room_date_added: { type: Date, default: () => moment.tz('Asia/Manila').toDate() }
+});
+
+// Create the RoomManagement model
+const RoomManagement = mongoose.model('hotel_rooms', roomManagementSchema);
+
+// Export RoomManagement and addRoomImages function
+module.exports = { RoomManagement };

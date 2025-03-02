@@ -34,10 +34,39 @@ package:
 # If this does not work thru production DEADD!!!
 
 functions:
+  hotelRooms:
+    handler: app.handler
+    timeout: 28
+    events:
+      - httpApi:
+          path: /api/v1/hotel/hotel_rooms
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/hotel_rooms
+          method: post
+
   mediaFiles:
     handler: app.handler
     timeout: 28
     events:
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files/{id}
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files/{id}
+          method: delete
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files/user/{id}
+          method: delete
+
+    # employee_records file
+
       - httpApi:
           path: /api/v1/hotel/uploads/employee_records/media_files
           method: get

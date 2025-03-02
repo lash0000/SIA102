@@ -5,10 +5,12 @@
 const express = require('express');
 
 const uploads_employee_records = require('./employee_records/routes');
+const uploads_rooms = require('./room_management/routes');
 
 const router = express.Router();
 
 // Define it
 router.use('/employee_records', uploads_employee_records);
+router.use('/room_management', uploads_rooms);
 
 module.exports = router;
