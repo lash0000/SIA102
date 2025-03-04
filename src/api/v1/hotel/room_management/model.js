@@ -9,14 +9,20 @@ const moment = require('moment-timezone');
 // const { uploadFile, deleteFile } = require("../../../../../global/config/S3");
 // const HotelMediaFiles = require('../uploads/room_management/model');
 
+const locationSchema = new mongoose.Schema({
+    street: { type: String, required: true },
+    city: { type: String, required: true }
+}, { _id: false });
+
 const roomManagementSchema = new mongoose.Schema({
     room_status: { type: String, required: true },
     slot_availability: { type: Number, required: true },
+    location: { type: locationSchema, require: false },
     room_details: [{
         room_title: { type: String, required: true },
         room_images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'room_media_files' }],
         room_availability: {
-            adults: { type: Number, required: true },
+            adults: { type: Number,  required: true },
             children: { type: Number, required: true },
             infants: { type: Number, required: true }
         },
@@ -26,6 +32,7 @@ const roomManagementSchema = new mongoose.Schema({
             offer_details: { type: String, required: true }
         }],
     }],
+    additional_details: { type: String, required: false },
     processed_by_id: { type: mongoose.Schema.Types.ObjectId, ref: 'hotel_employees_staff_records', required: true },
     generated_room_date_added: { type: Date, default: () => moment.tz('Asia/Manila').toDate() }
 });
