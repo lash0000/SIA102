@@ -31,7 +31,7 @@ const fullAddress = new mongoose.Schema({
 const roomManagementSchema = new mongoose.Schema({
     room_status: { type: String, required: true },
     slot_availability: { type: Number, required: true },
-    location: { type: fullAddress, require: false },
+    location: { type: fullAddress, required: false },
     room_details: [{
         room_title: { type: String, required: true },
         room_images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'room_media_files' }],
