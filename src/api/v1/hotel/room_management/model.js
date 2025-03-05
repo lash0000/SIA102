@@ -9,15 +9,29 @@ const moment = require('moment-timezone');
 // const { uploadFile, deleteFile } = require("../../../../../global/config/S3");
 // const HotelMediaFiles = require('../uploads/room_management/model');
 
-const locationSchema = new mongoose.Schema({
-    street: { type: String, required: true },
-    city: { type: String, required: true }
+/*
+In case of fullAddress here's suggested way of providing precise location
+brgy -> https://psgc.gitlab.io/api//regions/{regionCode}/barangays/
+city -> https://psgc.gitlab.io/api//regions/{regionCode}/cities-municipalities/
+        https://psgc.gitlab.io/api//regions/{regionCode}/sub-municipalities/
+province -> https://psgc.gitlab.io/api/provinces/
+
+All of this should be dropdown UI based
+*/
+
+const fullAddress = new mongoose.Schema({
+    street: { type: String, required: false },
+    subdivision_village: { type: String, required: false },
+    brgy: { type: String, required: false },
+    city: { type: String, required: false },
+    province: { type: String, required: false },
+    postalcode: { type: Number, required: false },
 }, { _id: false });
 
 const roomManagementSchema = new mongoose.Schema({
     room_status: { type: String, required: true },
     slot_availability: { type: Number, required: true },
-    location: { type: locationSchema, require: false },
+    location: { type: fullAddress, require: false },
     room_details: [{
         room_title: { type: String, required: true },
         room_images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'room_media_files' }],
