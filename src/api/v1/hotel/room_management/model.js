@@ -11,9 +11,9 @@ const moment = require('moment-timezone');
 
 /*
 In case of fullAddress here's suggested way of providing precise location
-brgy -> https://psgc.gitlab.io/api//regions/{regionCode}/barangays/
-city -> https://psgc.gitlab.io/api//regions/{regionCode}/cities-municipalities/
-        https://psgc.gitlab.io/api//regions/{regionCode}/sub-municipalities/
+brgy -> https://psgc.gitlab.io/api/regions/{regionCode}/barangays/
+city -> https://psgc.gitlab.io/api/regions/{regionCode}/cities-municipalities/
+        https://psgc.gitlab.io/api/regions/{regionCode}/sub-municipalities/
 province -> https://psgc.gitlab.io/api/provinces/
 
 All of this should be dropdown UI based
