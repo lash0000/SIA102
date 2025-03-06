@@ -31,7 +31,6 @@ const getAllFiles = async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Files retrieved successfully",
             media_files: media_files
         });
 

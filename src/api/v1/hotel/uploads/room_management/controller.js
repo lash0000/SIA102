@@ -23,7 +23,7 @@ const getAllFiles = async (req, res) => {
         await connectToDB();
 
         const media_files = await HotelMediaFiles.find()
-            .sort({ 'media_files.uploaded_date': -1 })
+            .sort({ 'media_files.uploaded_date': -1 }) // Sort by uploaded_date in descending order (latest first)
             .exec();
 
         if (!media_files || media_files.length === 0) {
@@ -31,7 +31,6 @@ const getAllFiles = async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Files retrieved successfully",
             media_files: media_files
         });
 
