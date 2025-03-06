@@ -21,24 +21,12 @@ const connectToDB = async () => {
 const getAllFiles = async (req, res) => {
     try {
         await connectToDB();
-
-        const media_files = await HotelMediaFiles.find()
-            .sort({ 'media_files.uploaded_date': -1 }) // Sort by uploaded_date in descending order (latest first)
-            .exec();
-
-        if (!media_files || media_files.length === 0) {
-            return res.status(404).json({ message: "No media files found." });
-        }
-
-        res.status(200).json({
-            media_files: media_files
-        });
-
+        const media_files = await HotelMediaFiles.find();
+        res.status(200).json(media_files);
     } catch (error) {
-        console.error("Error fetching files:", error);
-        res.status(500).json({ message: "Error fetching files", error: error.message });
+        res.status(500).json({ message: 'Error fetching all files.', error });
     }
-};
+}
 
 // GET: (Issue who uploaded file via _id)
 const uploadedById = async (req, res) => {
