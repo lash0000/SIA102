@@ -1,4 +1,4 @@
-// src/api/v1/hotel/uploads/employee_records/controller.js
+// src/api/v1/hotel/uploads/room_management/controller.js
 const { uploadFile, deleteFile } = require("../../../../../../global/config/S3");
 // const { sendMessageToQueue } = require("../../../../../global/config/SQS");
 const mongoose = require('mongoose');
