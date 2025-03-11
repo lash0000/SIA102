@@ -3,16 +3,16 @@
 const mongoose = require('mongoose');
 const HotelRooms = require('../room_management/model');
 
-const connectToDB = async () => {
-    try {
-        const dbName = process.env.MONGODB_URI.split('/').pop().split('?')[0];
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log(`Connected to MongoDB database: ${dbName}`);
-    } catch (error) {
-        console.error('MongoDB connection error:', error);
-        throw error;
-    }
-};
+// const connectToDB = async () => {
+//     try {
+//         const dbName = process.env.MONGODB_URI.split('/').pop().split('?')[0];
+//         await mongoose.connect(process.env.MONGODB_URI);
+//         console.log(`Connected to MongoDB database: ${dbName}`);
+//     } catch (error) {
+//         console.error('MongoDB connection error:', error);
+//         throw error;
+//     }
+// };
 
 // Here's my criteria btw
 
