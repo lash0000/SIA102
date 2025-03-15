@@ -1,4 +1,4 @@
-// src/api/v1/hotel/uploads/room_management/routes.js
+// src/api/v1/hotel/uploads/queues/routes.js
 const express = require("express");
 const router = express.Router();
 const { uploadFiles, deleteFileById, deleteAllFilesByUser, getAllFiles, uploadedById } = require("./controller");
