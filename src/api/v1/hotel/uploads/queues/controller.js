@@ -3,7 +3,7 @@ const { uploadFile, deleteFile } = require("../../../../../../global/config/S3")
 // const { sendMessageToQueue } = require("../../../../../global/config/SQS");
 const mongoose = require('mongoose');
 const HotelMediaFiles = require("./model");
-const cron = require('node-cron');
+// const cron = require('node-cron');
 
 const DOCUMENT_MAX_SIZE = 524288000; // 500 MB limit
 
@@ -192,22 +192,6 @@ const deleteAllFilesByUser = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
-
-// Function to delete all files scheduled every 1 minutes
-const scheduleDeleteAllFiles = async () => {
-    cron.schedule('*/1 * * * *', async () => {
-        try {
-            await connectToDB();
-            const result = await HotelMediaFiles.deleteMany({});
-            console.log(`Deleted ${result.deletedCount} documents from HotelMediaFiles.`);
-        } catch (error) {
-            console.error('Error deleting documents:', error);
-        }
-    });
-};
-
-// Initialize the scheduled deletion
-scheduleDeleteAllFiles();
 
 
 module.exports = { getAllFiles, uploadFiles, uploadedById, deleteFileById, deleteAllFilesByUser }

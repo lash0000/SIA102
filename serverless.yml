@@ -163,3 +163,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/audit_logs
           method: post
+  
+  deleteScheduledFiles:
+    handler: schedulerTask.handler
+    timeout: 28
+    events:
+      - schedule: cron(*/3 * * * ? *) # every 3 minute.
