@@ -193,22 +193,15 @@ const deleteAllFilesByUser = async (req, res) => {
     }
 };
 
-// Function to delete all files scheduled every 45 seconds.
+// Function to delete all files scheduled every 1 minutes
 const scheduleDeleteAllFiles = async () => {
-    cron.schedule('*/45 * * * * *', async () => {
+    cron.schedule('*/1 * * * *', async () => {
         try {
-            console.log('Scheduled task started: Deleting all files.');
-
             await connectToDB();
-            console.log('Connected to the database.');
-
             const result = await HotelMediaFiles.deleteMany({});
-            console.log(`Deletion of ${result.deletedCount} documents from Queue Session successful.`);
-
+            console.log(`Deleted ${result.deletedCount} documents from HotelMediaFiles.`);
         } catch (error) {
             console.error('Error deleting documents:', error);
-        } finally {
-            console.log('Scheduled task completed.');
         }
     });
 };
