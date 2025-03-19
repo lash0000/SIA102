@@ -1,11 +1,14 @@
+/*
+This upload queue is solely use for handling Room Management feature.
+*/
+
 // src/api/v1/hotel/uploads/queues/controller.js
 const { uploadFile, deleteFile } = require("../../../../../../global/config/S3");
-// const { sendMessageToQueue } = require("../../../../../global/config/SQS");
 const mongoose = require('mongoose');
 const HotelMediaFiles = require("./model");
-// const cron = require('node-cron');
-
+const RoomMediaFiles = require("../room_management/model");
 const DOCUMENT_MAX_SIZE = 524288000; // 500 MB limit
+const { v4: uuidv4 } = require('uuid');
 
 const connectToDB = async () => {
     try {
@@ -58,14 +61,14 @@ const uploadFiles = async (req, res) => {
         const processed_by_id = req.query.processed_by_id;
         const files = req.files;
 
-        console.log("Received files:", files); 
+        console.log("Received files:", files);
 
         if (!processed_by_id || !files || files.length === 0) {
             return res.status(400).json({ error: "processed_by_id and files are required" });
         }
 
         const uploadedFiles = [];
-        const uploadPromises = []; 
+        const uploadPromises = [];
 
         const folderName = 'room_management';
 
@@ -77,7 +80,7 @@ const uploadFiles = async (req, res) => {
             console.log("Uploading file:", file.originalname);
 
             uploadPromises.push(
-                uploadFile(file, folderName).then(uploadResult => {
+                uploadFile(file, folderName).then(async uploadResult => {
                     console.log("S3 Upload Result:", uploadResult);
 
                     const fileMetadata = {
@@ -87,17 +90,31 @@ const uploadFiles = async (req, res) => {
                     };
 
                     uploadedFiles.push(fileMetadata);
-                    
-                    const mediaFiles = new HotelMediaFiles({
+
+                    // Generate a unique UUID
+                    const uniqueId = uuidv4();
+
+                    // Save to HotelMediaFiles (queue_uploads)
+                    const hotelMediaFile = new HotelMediaFiles({
+                        _id: uniqueId,
                         processed_by_id: processed_by_id,
                         media_files: [fileMetadata],
                     });
 
-                    return mediaFiles.save().then((savedData) => {
-                        console.log("Saved file metadata to MongoDB:", savedData);
-                    }).catch((error) => {
-                        console.error("Error saving to MongoDB:", error);
+                    const hotelSavedData = await hotelMediaFile.save();
+                    console.log("HotelMediaFiles saved with _id:", hotelSavedData._id);
+
+                    // Use the same UUID for RoomMediaFiles
+                    const roomMediaFile = new RoomMediaFiles({
+                        _id: uniqueId,
+                        processed_by_id: processed_by_id,
+                        media_files: [fileMetadata],
                     });
+
+                    const roomSavedData = await roomMediaFile.save();
+                    console.log("RoomMediaFiles saved with _id:", roomSavedData._id);
+                }).catch((error) => {
+                    console.error("Error saving to MongoDB:", error);
                 })
             );
         }
