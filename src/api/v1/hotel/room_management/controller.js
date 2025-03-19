@@ -52,10 +52,13 @@ const getRooms = async (req, res) => {
 const createRoom = async (req, res) => {
     try {
         const {
+            location,
             slot_availability,
             room_status,
             room_initial_price_per_night,
             room_details,
+            action,
+            comments,
             processed_by_id
         } = req.body;
 
@@ -68,6 +71,7 @@ const createRoom = async (req, res) => {
         // First Assessment: Add Data
 
         const newRoom = new RoomManagement({
+            location,
             slot_availability,
             room_status,
             room_initial_price_per_night,
