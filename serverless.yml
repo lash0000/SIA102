@@ -164,8 +164,10 @@ functions:
           path: /api/v1/hotel/audit_logs
           method: post
   
+  # Every minute so refer to https://crontab.guru/
+
   deleteScheduledFiles:
     handler: schedulerTask.handler
     timeout: 28
     events:
-      - schedule: cron(* * * * *) # Every minute so refer to https://crontab.guru/
+      - schedule: cron(*/2 * * * *)
