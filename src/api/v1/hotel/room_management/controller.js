@@ -104,4 +104,19 @@ const createRoom = async (req, res) => {
     }
 };
 
+// HELPERS (THE REST)
+
+function getDeviceInfo() {
+    const info = platform;
+    return {
+        platform_name: info.name || 'Unidentified',
+        platform_version: info.version || 'Unidentified',
+        platform_product: info.product || 'Unidentified',
+        platform_manufacturer: info.manufacturer || 'Unidentified',
+        platform_layout: info.layout || 'Unidentified',
+        platform_os: info.os.family || 'Unidentified',
+        platform_description: info.description || 'Unidentified'
+    };
+}
+
 module.exports = { getRooms, createRoom };
