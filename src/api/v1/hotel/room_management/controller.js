@@ -7,6 +7,9 @@
 
 const mongoose = require('mongoose');
 const { RoomManagement } = require('./model');
+const { AuditLogs } = require('../audit_logs/model');
+const requestIp = require('request-ip');
+const platform = require('platform');
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -49,11 +52,11 @@ const getRooms = async (req, res) => {
 const createRoom = async (req, res) => {
     try {
         const {
-            slot_availability, 
-            room_status, 
-            room_initial_price_per_night, 
-            room_details, 
-            processed_by_id 
+            slot_availability,
+            room_status,
+            room_initial_price_per_night,
+            room_details,
+            processed_by_id
         } = req.body;
 
         if (!slot_availability || !room_status || !processed_by_id) {
@@ -61,6 +64,8 @@ const createRoom = async (req, res) => {
         }
 
         await connectToDB();
+
+        // First Assessment: Add Data
 
         const newRoom = new RoomManagement({
             slot_availability,
@@ -72,8 +77,24 @@ const createRoom = async (req, res) => {
 
         await newRoom.save();
 
+        // Second Assessment: Audit Log
+
+        const ipAddress = requestIp.getClientIp(req);
+        const deviceInfo = getDeviceInfo();
+
+        const auditLogData = {
+            issued_by: processed_by_id,
+            action: action,
+            comments: comments,
+            ip_address: ipAddress,
+            device_info: deviceInfo,
+        };
+
+        const newAuditLog = new AuditLogs(auditLogData);
+        await newAuditLog.save();
+
         res.status(201).json({
-            message: "Room created successfully",
+            message: "New Room added with audit log record successfully",
             room: newRoom
         });
 
