@@ -168,4 +168,4 @@ functions:
     handler: schedulerTask.handler
     timeout: 28
     events:
-      - schedule: cron(*/2 * * * ? *) # every 2 minute please refer to https://crontab.guru/
+      - schedule: cron(*/4 * * * ? *) # every 4 minute please refer to https://crontab.guru/
