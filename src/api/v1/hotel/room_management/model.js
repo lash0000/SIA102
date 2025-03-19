@@ -49,7 +49,10 @@ const roomManagementSchema = new mongoose.Schema({
     }],
     additional_details: { type: String, required: false },
     processed_by_id: { type: mongoose.Schema.Types.ObjectId, ref: 'hotel_employees_staff_records', required: true },
-    generated_room_date_added: { type: Date, default: () => moment.tz('Asia/Manila').toDate() }
+    generated_room_date_added: { 
+        type: Date, 
+        default: () => moment.tz('Asia/Manila').toDate() 
+    }
 });
 
 // Create the RoomManagement model
