@@ -170,9 +170,9 @@ const create_TemporaryRecord = async (req, res) => {
             <p>Email: <strong>${email_address}<strong></p>
             <p>Your temporary password is: <strong>${plainPassword}</strong></p>
             <p>This account does not have any expirations but we advise for you to change it as soon as possible.</p>
-            <p>Thank you for choosing StaySuite Hotel Services.</p>
+            <p>Thank you for choosing our Hotel Management Services.</p>
             <hr>
-            <p style="font-size: 12px; color: #888;">This process / request was made by one of our either staffs or your manager.</p>
+            <p style="font-size: 12px; color: #888;">This process / request was made by one of our staffs or your manager.</p>
         </div>
         `;
 
