@@ -8,7 +8,7 @@ const moment = require('moment-timezone');
 
 // HELPERS 
 
-const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|yahoo\.com|proton\.me)$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|yahoo\.com|proton\.me|duck\.com)$/;
 const phoneNumberRegex = /^\+63\d{10}$/;
 const nameRegex = /^[A-Za-z\s]+$/;
 
