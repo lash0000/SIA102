@@ -21,12 +21,19 @@ const connectToDB = async () => {
 };
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     try {
         await connectToDB();
 
-        const user = await StaffAccount.findOne({ email_address: email });
+        // Try to find user by email OR username
+        const user = await StaffAccount.findOne({
+            $or: [
+                { email_address: email },
+                { username: username }
+            ]
+        });
+
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -36,23 +43,22 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // const accessToken = jwt.sign({ id: user._id }, ACCESS_SECRET, { expiresIn: '15m' });
+        // You mentioned you only want the refresh token for persistent login sessions
         const refreshToken = jwt.sign({ id: user._id }, REFRESH_SECRET, { expiresIn: '7d' });
 
         const auth = new Auth({
             issued_by: user._id,
-            access_token: accessToken,
+            access_token: null, // optional since you're not using it
             refresh_token: refreshToken
         });
 
         await auth.save();
 
-        res.status(200).json({ access_token: accessToken, refresh_token: refreshToken });
+        res.status(200).json({ refresh_token: refreshToken });
     } catch (err) {
         res.status(500).json({ message: 'Login failed', error: err.message });
     }
 };
-
 
 const getAllSessions = async (req, res) => {
     try {

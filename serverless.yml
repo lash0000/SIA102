@@ -20,6 +20,8 @@ provider:
     MONGODB_URI: ${env:MONGODB_URI}
     MAIL_USERNAME: ${env:MAIL_USERNAME}
     MAIL_PASSWORD: ${env:MAIL_PASSWORD}
+    JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET}
+    JWT_ACCESS_SECRET: ${env:JWT_ACCESS_SECRET}
 
 # Package configuration (This is already save my life ^^)
 package:
