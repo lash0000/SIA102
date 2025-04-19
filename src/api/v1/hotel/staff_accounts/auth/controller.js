@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const Auth = require('./model');
 const StaffAccount = require('../model');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcryptjs'); 
 
 // SECRET KEYS (Should ideally be in .env)
 // const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
