@@ -138,6 +138,12 @@ functions:
           path: /api/v1/hotel/staff_accounts
           method: get
       - httpApi:
+          path: /api/v1/hotel/staff_accounts/auth/sessions
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/auth/login
+          method: post
+      - httpApi:
           path: /api/v1/hotel/staff_accounts
           method: post
       - httpApi:

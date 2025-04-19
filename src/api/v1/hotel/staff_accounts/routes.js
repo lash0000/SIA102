@@ -9,7 +9,8 @@ const router = express.Router();
 
 router.get('/', getAllRecords); // GET all data
 router.get('/:id', getRecordById); // GET a specific data by ID
-router.post('/', createRecord); 
+router.post('/', createRecord);
+
 // POST issuance for every registrations
 // This case is applicable if manager did not made attempts to use Add New Staff.
 router.post('/temporary', create_TemporaryRecord);

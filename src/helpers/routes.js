@@ -7,11 +7,13 @@ const OTPRecovery = require('../api/v1/hotel/otp/forgot_password/routes');
 const uploadRoutes = require('../api/v1/hotel/uploads/helpers');
 const auditLogs = require('../api/v1/hotel/audit_logs/routes');
 const room_management = require('../api/v1/hotel/room_management/routes');
+const userLogin = require('../api/v1/hotel/staff_accounts/auth/routes');
 
 const router = express.Router();
 
 // Define the route handlers
 router.use('/staff_accounts', employeeRecords);
+router.use('/staff_accounts/auth', userLogin);
 router.use('/otp/registration', OTPRegistration);
 router.use('/otp/forgot_password', OTPRecovery);
 router.use('/uploads', uploadRoutes);
