@@ -27,14 +27,16 @@ const connectToDB = async () => {
 };
 
 const generateRandomPassword = () => {
-    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let password = '';
-    const passwordLength = Math.floor(Math.random() * (20 - 8 + 1)) + 8;
+    const adjectives = ['Happy', 'Sad', 'Fast', 'Lazy', 'Cool', 'Smart', 'Brave', 'Clever'];
+    const nouns = ['User', 'Admin', 'Guest', 'Person', 'Lover', 'Execute', 'Staff'];
+    const symbols = ['@', '#', '$', '!'];
 
-    for (let i = 0; i < passwordLength; i++) {
-        password += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return password;
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const number = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+
+    return `${symbol}${adjective}${noun}${number}`;
 };
 
 // GET METHOD (BY ALL)
