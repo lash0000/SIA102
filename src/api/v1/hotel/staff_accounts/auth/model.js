@@ -10,10 +10,10 @@ const AuthSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    access_token: {
-        type: String,
-        required: true
-    },
+    // access_token: {
+    //     type: String,
+    //     required: true
+    // },
     issued_at: {
         type: Date,
         default: Date.now
