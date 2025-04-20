@@ -20,7 +20,7 @@ exports.handler = async (event) => {
     try {
         await connectToDB();
         const result = await HotelMediaFiles.deleteMany({});
-        console.log(`Deleted ${result.deletedCount} documents from HotelMediaFiles.`);
+        console.log(`Deleted ${result.deletedCount} documents from HotelMediaFiles model on MongoDB.`);
     } catch (error) {
         console.error('Error deleting documents:', error);
     } finally {

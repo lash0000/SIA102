@@ -195,8 +195,14 @@ functions:
           path: /api/v1/hotel/audit_logs
           method: post
   
+  deleteUnnecessary:
+    handler: lateSchedule.handler
+    timeout: 28
+    events:
+      - schedule: cron(*/45 * * * ? *)
+
   deleteScheduledFiles:
-    handler: schedulerTask.handler
+    handler: queueSchedule.handler
     timeout: 28
     events:
       - schedule: cron(*/3 * * * ? *) # every 3 minute please refer to https://crontab.guru/
