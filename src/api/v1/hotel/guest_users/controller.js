@@ -1,10 +1,11 @@
 /*
-*   This feature is for Employees Information Management (HRIS)
-*   src/api/v1/hotel/staff_accounts/controller.js
+*   This feature is for Overall Guest Accounts (only web)
+*   src/api/v1/hotel/guest_accounts/controller.js
 */
 
 const mongoose = require('mongoose');
 const GuestUserAccount = require('./model');
+const StaffAcount = require('../staff_accounts/model');
 const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10;
 const { Send } = require('../../../../../global/config/NodeMailer');
@@ -58,46 +59,43 @@ const createRecord = async (req, res) => {
     try {
         await connectToDB();
         const employeeRecordData = req.body;
+        const { email_address } = employeeRecordData;
 
-        // Duplicate check
-        const duplicateChecks = await GuestUserAccount.findOne({
-            $or: [
-                { email_address: employeeRecordData.email_address },
-            ],
-        });
-
-        if (duplicateChecks) {
-            let duplicateField;
-
-            if (duplicateChecks.email_address === employeeRecordData.email_address) {
-                duplicateField = 'email_address';
-            }
-
+        // 1. Check if email exists in StaffAccount
+        const staffEmailExists = await StaffAcount.findOne({ email_address });
+        if (staffEmailExists) {
             return res.status(400).json({
-                message: `This employee record account information with ${duplicateField} already exists.`,
+                message: `The email address '${email_address}' is already associated with a staff account.`,
             });
         }
 
-        // Validate password presence
+        // 2. Check if email exists in GuestUserAccount
+        const duplicateGuest = await GuestUserAccount.findOne({ email_address });
+        if (duplicateGuest) {
+            return res.status(400).json({
+                message: `The email address '${email_address}' is already associated with a guest account.`,
+            });
+        }
+
+        // 3. Validate password presence
         if (!employeeRecordData.guest_password) {
             return res.status(400).json({
                 message: 'Password is required and must be provided.',
             });
         }
 
-        // Keep plain password for the email
+        // 4. Store plain password temporarily
         const plainPassword = employeeRecordData.guest_password;
 
-        // Hash the password
+        // 5. Hash password
         const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
         employeeRecordData.guest_password = hashedPassword;
 
-        // Create the employee record
+        // 6. Create and save the new GuestUserAccount
         const newEmployeeRecord = new GuestUserAccount(employeeRecordData);
         await newEmployeeRecord.save();
 
-        // Email format
-        const { email_address } = employeeRecordData;
+        // 7. Compose email
         const emailBody = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
           <h2 style="color: #2b2b2b;">🎉 Welcome to Our Hotel Management System</h2>
@@ -118,18 +116,18 @@ const createRecord = async (req, res) => {
           <hr>
           <p style="font-size: 12px; color: #888;">This inbox is a support on aftermath of your registration in our platform.</p>
         </div>
-      `;
-      
+        `;
 
-        // Send email
+        // 8. Send welcome email
         await Send(email_address, emailBody);
 
-        // Respond to client
+        // 9. Respond with success
         res.status(201).json({
-            message: 'Employee record added successfully',
+            message: 'Guest account created successfully',
             record: newEmployeeRecord,
             email_sent: true,
         });
+
     } catch (error) {
         if (error.name === 'ValidationError') {
             const validationErrors = Object.keys(error.errors).map(key => ({
@@ -139,7 +137,7 @@ const createRecord = async (req, res) => {
             return res.status(400).json({ message: 'Validation Error', errors: validationErrors });
         }
 
-        res.status(500).json({ message: 'Error adding employee record', error: error.message });
+        res.status(500).json({ message: 'Error creating guest account', error: error.message });
     }
 };
 
