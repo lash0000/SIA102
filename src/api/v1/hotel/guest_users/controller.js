@@ -77,19 +77,9 @@ const createRecord = async (req, res) => {
             });
         }
 
-        // 3. Validate password presence
-        if (!employeeRecordData.guest_password) {
-            return res.status(400).json({
-                message: 'Password is required and must be provided.',
-            });
-        }
-
-        // 4. Store plain password temporarily
-        const plainPassword = employeeRecordData.guest_password;
-
-        // 5. Validate that password is strong
-        if (employeeRecordData.guest_passowrd) {
-            const hashedPassword = await bcrypt.hash(employeeRecordData.guest_passowrd, SALT_ROUNDS);
+        // 3. Validate that password is strong
+        if (employeeRecordData.guest_password) {
+            const hashedPassword = await bcrypt.hash(employeeRecordData.guest_password, SALT_ROUNDS);
             employeeRecordData.guest_passowrd = hashedPassword;
         } else {
             return res.status(400).json({
@@ -97,11 +87,11 @@ const createRecord = async (req, res) => {
             });
         }
 
-        // 6. Create and save the new GuestUserAccount
+        // 4. Create and save the new GuestUserAccount
         const newEmployeeRecord = new GuestUserAccount(employeeRecordData);
         await newEmployeeRecord.save();
 
-        // 7. Compose email
+        // 5. Compose email
         const emailBody = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
           <h2 style="color: #2b2b2b;">🎉 Welcome to Our Hotel Management System</h2>
@@ -124,10 +114,10 @@ const createRecord = async (req, res) => {
         </div>
         `;
 
-        // 8. Send welcome email
+        // 6. Send welcome email
         await Send(email_address, emailBody);
 
-        // 9. Respond with success
+        // 7. Respond with success
         res.status(201).json({
             message: 'Guest account created successfully',
             record: newEmployeeRecord,
