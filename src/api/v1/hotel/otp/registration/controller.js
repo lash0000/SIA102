@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const OTP = require('./model');
 const { Send } = require('../../../../../../global/config/NodeMailer');
+const jwt = require('jsonwebtoken');
+
+// SECRET KEYS (Should ideally be in .env)
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 
 const connectToDB = async () => {
     try {
@@ -47,12 +51,18 @@ const otpRegistrationController = async (req, res) => {
 
         // Set OTP expiration time (5 minutes from now)
         const expirationTime = new Date(Date.now() + 5 * 60 * 1000);
+        
+        const payload = { email };
+        const access_token = jwt.sign(payload, ACCESS_SECRET, {
+            expiresIn: '15m', // Short-lived for OTP (adjust as needed)
+        });
 
         // Store OTP in the database
         const otpEntry = new OTP({
             email,
             otp,
             expiration: expirationTime,
+            access_token,
         });
 
         await otpEntry.save();
@@ -82,6 +92,7 @@ const otpRegistrationController = async (req, res) => {
             success: true,
             message: "OTP sent successfully",
             otp: otp,
+            access_token,
             data: emailResponse,
         });
     } catch (error) {

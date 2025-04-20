@@ -43,7 +43,6 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // You mentioned you only want the refresh token for persistent login sessions
         const refreshToken = jwt.sign({ id: user._id }, REFRESH_SECRET, { expiresIn: '7d' });
 
         const auth = new Auth({
