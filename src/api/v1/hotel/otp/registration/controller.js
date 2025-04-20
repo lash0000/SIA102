@@ -18,7 +18,7 @@ const connectToDB = async () => {
 };
 
 const generateOTP = () => {
-    const otp = Math.floor(100000 + Math.random() * 999999);
+    const otp = Math.floor(100000 + Math.random() * 900000);
     return otp;
 };
 
