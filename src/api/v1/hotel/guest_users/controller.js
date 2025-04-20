@@ -87,9 +87,15 @@ const createRecord = async (req, res) => {
         // 4. Store plain password temporarily
         const plainPassword = employeeRecordData.guest_password;
 
-        // 5. Hash password
-        const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-        employeeRecordData.guest_password = hashedPassword;
+        // 5. Validate that password is strong
+        if (employeeRecordData.guest_passowrd) {
+            const hashedPassword = await bcrypt.hash(employeeRecordData.guest_passowrd, SALT_ROUNDS);
+            employeeRecordData.guest_passowrd = hashedPassword;
+        } else {
+            return res.status(400).json({
+                message: 'Password is required and must be provided.',
+            });
+        }
 
         // 6. Create and save the new GuestUserAccount
         const newEmployeeRecord = new GuestUserAccount(employeeRecordData);

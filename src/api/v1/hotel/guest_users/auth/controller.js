@@ -62,7 +62,7 @@ const login = async (req, res) => {
 const getAllSessions = async (req, res) => {
     try {
         await connectToDB();
-        const sessions = await GuestAuthAuth.find().populate('issued_by', '-guest_password');
+        const sessions = await GuestAuth.find().populate('issued_by', '-guest_password');
         res.status(200).json(sessions);
     } catch (err) {
         res.status(500).json({ message: 'Unable to fetch sessions', error: err.message });
