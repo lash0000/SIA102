@@ -97,11 +97,29 @@ const login = async (req, res) => {
 const getAllSessions = async (req, res) => {
     try {
         await connectToDB();
-        const sessions = await Auth.find().populate('issued_by', '-employee_password');
-        res.status(200).json(sessions);
+
+        // Get staff sessions
+        const staffSessions = await Auth.find()
+            .populate('issued_by', '-employee_password')
+            .lean(); // Convert to plain JS object
+
+        // Get guest sessions
+        const guestSessions = await GuestAuthSchema.find()
+            .populate('issued_by', '-guest_password')
+            .lean();
+
+        // Merge both results
+        const allSessions = [...staffSessions, ...guestSessions];
+
+        // Optionally sort by latest session
+        allSessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.status(200).json(allSessions);
+
     } catch (err) {
         res.status(500).json({ message: 'Unable to fetch sessions', error: err.message });
     }
 };
+
 
 module.exports = { login, getAllSessions };
