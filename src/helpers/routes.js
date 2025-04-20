@@ -9,7 +9,7 @@ const auditLogs = require('../api/v1/hotel/audit_logs/routes');
 const room_management = require('../api/v1/hotel/room_management/routes');
 const userLogin = require('../api/v1/hotel/staff_accounts/auth/routes');
 const guestRecords = require('../api/v1/hotel/guest_users/routes');
-const guestLogin = require('../api/v1/hotel/guest_users/routes');
+const guestLogin = require('../api/v1/hotel/guest_users/auth/routes');
 
 const router = express.Router();
 
