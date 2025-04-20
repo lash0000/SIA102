@@ -80,7 +80,7 @@ const createRecord = async (req, res) => {
         // 3. Validate that password is strong
         if (employeeRecordData.guest_password) {
             const hashedPassword = await bcrypt.hash(employeeRecordData.guest_password, SALT_ROUNDS);
-            employeeRecordData.guest_passowrd = hashedPassword;
+            employeeRecordData.guest_password = hashedPassword;
         } else {
             return res.status(400).json({
                 message: 'Password is required and must be provided.',
