@@ -9,6 +9,7 @@ const auditLogs = require('../api/v1/hotel/audit_logs/routes');
 const room_management = require('../api/v1/hotel/room_management/routes');
 const userLogin = require('../api/v1/hotel/staff_accounts/auth/routes');
 const guestRecords = require('../api/v1/hotel/guest_users/routes');
+const guestLogin = require('../api/v1/hotel/guest_users/routes');
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use('/uploads', uploadRoutes);
 router.use('/audit_logs', auditLogs);
 router.use('/hotel_rooms', room_management);
 router.use('/guest_accounts', guestRecords);
+router.use('/guest_accounts/auth', guestLogin);
 
 module.exports = router;

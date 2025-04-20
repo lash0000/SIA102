@@ -54,7 +54,7 @@ const otpRegistrationController = async (req, res) => {
         
         const payload = { email };
         const access_token = jwt.sign(payload, ACCESS_SECRET, {
-            expiresIn: '15m', // Short-lived for OTP (adjust as needed)
+            expiresIn: '45m', // Short-lived for OTP (adjust as needed)
         });
 
         // Store OTP in the database
