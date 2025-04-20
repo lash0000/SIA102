@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Auth = require('./model');
 const StaffAccount = require('../model');
+const GuestAccount = require('../../guest_users/model');
+const GuestAuthSchema = require('../../guest_users/auth/model');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); 
 
@@ -26,38 +28,71 @@ const login = async (req, res) => {
     try {
         await connectToDB();
 
-        // Try to find user by email OR username
-        const user = await StaffAccount.findOne({
+        // Attempt to find user in StaffAccount first
+        let user = await StaffAccount.findOne({
             $or: [
                 { email_address: email },
                 { username: username }
             ]
         });
 
+        let isGuest = false;
+
+        // If not found in StaffAccount, try GuestStaffAccount
         if (!user) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            user = await GuestAccount.findOne({
+                $or: [
+                    { email_address: email },
+                    { username: username }
+                ]
+            });
+
+            if (!user) {
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+
+            isGuest = true;
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.employee_password);
+        // Check password
+        const passwordMatch = await bcrypt.compare(password, user.guest_password || user.employee_password);
         if (!passwordMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        // Create refresh token
         const refreshToken = jwt.sign({ id: user._id }, REFRESH_SECRET, { expiresIn: '7d' });
 
-        const auth = new Auth({
-            issued_by: user._id,
-            access_token: null, // optional since you're not using it
-            refresh_token: refreshToken
+        // Save auth record based on type
+        if (isGuest) {
+            const guest_auth = new GuestAuthSchema({
+                issued_by: user._id,
+                access_token: null,
+                refresh_token: refreshToken
+            });
+
+            await guest_auth.save();
+        } else {
+            const auth = new Auth({
+                issued_by: user._id,
+                access_token: null,
+                refresh_token: refreshToken
+            });
+
+            await auth.save();
+        }
+
+        // Respond with token
+        res.status(200).json({
+            refresh_token: refreshToken,
+            role: isGuest ? 'guest' : 'staff'
         });
 
-        await auth.save();
-
-        res.status(200).json({ refresh_token: refreshToken });
     } catch (err) {
         res.status(500).json({ message: 'Login failed', error: err.message });
     }
 };
+
 
 const getAllSessions = async (req, res) => {
     try {
