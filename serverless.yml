@@ -41,9 +41,6 @@ functions:
     timeout: 28
     events:
       - httpApi:
-          path: /
-          method: get
-      - httpApi:
           path: /api/v1/hotel/guest_accounts
           method: get
       - httpApi:
