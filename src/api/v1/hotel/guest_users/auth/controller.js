@@ -45,7 +45,7 @@ const login = async (req, res) => {
 
         const refreshToken = jwt.sign({ id: user._id }, REFRESH_SECRET, { expiresIn: '7d' });
 
-        const auth = new Auth({
+        const auth = new GuestAuth({
             issued_by: user._id,
             access_token: null, // optional since you're not using it
             refresh_token: refreshToken
