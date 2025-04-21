@@ -99,9 +99,9 @@ const createRecord = async (req, res) => {
           <p>We're thrilled to have you on board.</p>
           <p>Here's how to get started to book, check-in, and pay your reservation via PayPal:</p>
           <ol>
-            <li>Log in with your account credentials provided below.</li>
-            <li>Navigate to the booking section and choose your desired room.</li>
-            <li>Complete the reservation and proceed with PayPal payment.</li>
+            <li>Explore available features</li>
+            <li>Book your first hotel reservation</li>
+            <li>Check out our informative guides with our article blogs page</li>
           </ol>
           <p style="margin-top: 20px;">
             <a href="https://sbit-3o-hms.vercel.app" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px;">
