@@ -47,6 +47,38 @@ const getRooms = async (req, res) => {
     }
 };
 
+// Fetch data by _id (ObjectId)
+
+const getRoomsById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid room ID format' });
+        }
+
+        // Fetch room by _id
+        const roomData = await RoomManagement.findOne({ _id: id }).lean();
+
+        // Check if room exists
+        if (!roomData) {
+            return res.status(404).json({ message: 'Room not found' });
+        }
+
+        // Return room data
+        res.status(200).json({
+            data: roomData
+        });
+    } catch (error) {
+        console.error('Error fetching room:', error);
+        res.status(500).json({
+            message: 'Error fetching this room / condominium.',
+            error: error.message,
+        });
+    }
+};
+
 // POST METHOD
 
 const createRoom = async (req, res) => {
@@ -123,4 +155,4 @@ function getDeviceInfo() {
     };
 }
 
-module.exports = { getRooms, createRoom };
+module.exports = { getRooms, getRoomsById, createRoom };

@@ -87,6 +87,9 @@ functions:
           path: /api/v1/hotel/hotel_rooms
           method: get
       - httpApi:
+          path: /api/v1/hotel/hotel_rooms/{id}
+          method: get
+      - httpApi:
           path: /api/v1/hotel/hotel_rooms
           method: post
 

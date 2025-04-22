@@ -3,11 +3,12 @@
 */
 
 const express = require('express');
-const { getRooms, createRoom } = require('./controller');
+const { getRooms, getRoomsById, createRoom } = require('./controller');
 
 const router = express.Router();
 
 router.get('/', getRooms);
+router.get('/:id', getRoomsById);
 router.post('/', createRoom);
 // router.put('/:id', updateRecord);
 
