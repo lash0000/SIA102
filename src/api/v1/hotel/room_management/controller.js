@@ -59,7 +59,9 @@ const getRoomsById = async (req, res) => {
         }
 
         // Fetch room by _id
-        const roomData = await RoomManagement.findOne({ _id: id }).lean();
+        const roomData = await RoomManagement.findOne({ _id: id }).lean()
+            .populate('room_details.room_images')
+            .exec();
 
         // Check if room exists
         if (!roomData) {
