@@ -68,7 +68,7 @@ const getRoomsById = async (req, res) => {
 
         // Return room data
         res.status(200).json({
-            data: roomData
+            rooms: roomData
         });
     } catch (error) {
         console.error('Error fetching room:', error);
