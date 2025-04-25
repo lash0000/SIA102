@@ -23,7 +23,7 @@ const connectToDB = async () => {
 };
 
 const login = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email_address, password } = req.body;
 
     try {
         await connectToDB();
@@ -31,7 +31,7 @@ const login = async (req, res) => {
         // Attempt to find user in StaffAccount first
         let user = await StaffAccount.findOne({
             $or: [
-                { email_address: email },
+                { email_address: email_address },
                 { username: username }
             ]
         });
@@ -42,7 +42,7 @@ const login = async (req, res) => {
         if (!user) {
             user = await GuestAccount.findOne({
                 $or: [
-                    { email_address: email },
+                    { email_address: email_address },
                     { username: username }
                 ]
             });
