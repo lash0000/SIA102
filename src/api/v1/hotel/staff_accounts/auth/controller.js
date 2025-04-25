@@ -28,49 +28,67 @@ const login = async (req, res) => {
     try {
         await connectToDB();
 
-        // Attempt to find user in StaffAccount first
-        let user = await StaffAccount.findOne({
-            $or: [
-                { email_address: email_address },
-                { username: username }
-            ]
-        });
-
+        let user = null;
         let isGuest = false;
+        let source = null; // New: track whether it matched via 'username' or 'email_address'
 
-        // If not found in StaffAccount, try GuestStaffAccount
-        if (!user) {
-            user = await GuestAccount.findOne({
-                $or: [
-                    { email_address: email_address },
-                    { username: username }
-                ]
-            });
-
-            if (!user) {
-                return res.status(401).json({ message: 'Invalid credentials' });
-            }
-
-            isGuest = true;
+        // Try StaffAccount first
+        if (email_address) {
+            user = await StaffAccount.findOne({ email_address: email_address });
+            source = 'email';
+        }
+        if (!user && username) {
+            user = await StaffAccount.findOne({ username: username });
+            source = 'username';
         }
 
-        // Check password
-        const passwordMatch = await bcrypt.compare(password, user.guest_password || user.employee_password);
+        // Try GuestAccount if not found in StaffAccount
+        if (!user) {
+            if (email_address) {
+                user = await GuestAccount.findOne({ email_address: email_address });
+                source = 'email';
+            }
+            if (!user && username) {
+                user = await GuestAccount.findOne({ username: username });
+                source = 'username';
+            }
+            if (user) isGuest = true;
+        }
+
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Password checking
+        let hashedPassword = null;
+
+        if (isGuest) {
+            hashedPassword = user.guest_password;
+        } else {
+            hashedPassword = user.employee_password;
+        }
+
+        if (!hashedPassword) {
+            return res.status(401).json({ message: 'Invalid credentials: No password set.' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, hashedPassword);
+
         if (!passwordMatch) {
+            console.log(`Login failed. Tried ${source}:`, source === 'email' ? email_address : username);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         // Create refresh token
         const refreshToken = jwt.sign({ id: user._id }, REFRESH_SECRET, { expiresIn: '7d' });
 
-        // Save auth record based on type
+        // Save auth record
         if (isGuest) {
             const guest_auth = new GuestAuthSchema({
                 issued_by: user._id,
                 access_token: null,
                 refresh_token: refreshToken
             });
-
             await guest_auth.save();
         } else {
             const auth = new Auth({
@@ -78,20 +96,20 @@ const login = async (req, res) => {
                 access_token: null,
                 refresh_token: refreshToken
             });
-
             await auth.save();
         }
 
-        // Respond with token
         res.status(200).json({
             refresh_token: refreshToken,
             role: isGuest ? 'guest' : 'staff'
         });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Login failed', error: err.message });
     }
 };
+
 
 
 const getAllSessions = async (req, res) => {
