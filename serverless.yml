@@ -41,10 +41,10 @@ functions:
     timeout: 28
     events:
       - httpApi:
-          path: /api/v1/hotel/hotel_chats/
+          path: /api/v1/hotel/hotel_chats
           method: get
       - httpApi:
-          path: /api/v1/hotel/hotel_chats/
+          path: /api/v1/hotel/hotel_chats
           method: post
 
   guestAccounts:

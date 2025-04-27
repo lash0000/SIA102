@@ -7,6 +7,7 @@ const GuestAccount = require('../guest_users/model');
 const AssistanceChat = require('./model');
 const mongoose = require('mongoose');
 
+// Ensure proper database name usage in connection
 const connectToDB = async () => {
     try {
         const dbName = process.env.MONGODB_URI.split('/').pop().split('?')[0];
@@ -45,35 +46,45 @@ const getAllChats = async (req, res) => {
 const newChat = async (req, res) => {
     try {
         await connectToDB();
+
         const { _id, chat_message } = req.body;
 
         if (!_id || !chat_message) {
-            return res.status(400).json({ message: 'Missing required fields for user ID.' });
+            return res.status(400).json({
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Missing required fields: _id and chat_message property.' })
+            });
         }
 
-        // Check if _id exists between StaffAccount and GuestAccount model
-        const staffAccount = await StaffAccount.findById(_id);
-        const guestAccount = staffAccount ? null : await GuestAccount.findById(_id);
+        const isStaff = await StaffAccount.findById(_id).lean();
+        const isGuest = await GuestAccount.findById(_id).lean();
 
-        if (!staffAccount && !guestAccount) {
-            return res.status(404).json({ message: 'No matching Staff or Guest found for provided _id.' });
+        if (!isStaff && !isGuest) {
+            return res.status(404).json({
+                statusCode: 404,
+                body: JSON.stringify({ message: 'No matching StaffAccount or GuestAccount found for provided _id.' })
+            });
         }
 
-        // Prepare new chat entry
-        const newChatEntry = new AssistanceChat({
-            staff_issued_by: staffAccount ? staffAccount._id : undefined,
-            guest_issued_by: guestAccount ? guestAccount._id : undefined,
-            chat_message: chat_message,
+        const newChatData = new AssistanceChat({
+            chat_message,
+            staff_issued_by: isStaff ? _id : undefined,
+            guest_issued_by: isGuest ? _id : undefined
         });
 
-        await newChatEntry.save();
+        await newChatData.save();
 
-        res.status(201).json({ 
-            message: 'Chat message successfully sent.', 
-            chat: newChatEntry 
+        return res.status(201).json({
+            statusCode: 201,
+            body: JSON.stringify({ message: 'Chat message created successfully.', chat: newChatData })
         });
+
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error.' });
+        console.error('Error creating chat message:', error);
+        return res.status(500).json({
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Internal server error.' })
+        });
     }
 };
 
