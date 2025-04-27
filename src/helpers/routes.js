@@ -1,4 +1,4 @@
-// MAIN ROUTER (IMPORT THOSE HANDLERS)
+// MAIN ROUTER (IMPORT THOSE HANDLERS) = ito yung root route directory.
 
 const express = require('express');
 const employeeRecords = require('../api/v1/hotel/staff_accounts/routes');
@@ -10,6 +10,7 @@ const room_management = require('../api/v1/hotel/room_management/routes');
 const userLogin = require('../api/v1/hotel/staff_accounts/auth/routes');
 const guestRecords = require('../api/v1/hotel/guest_users/routes');
 const guestLogin = require('../api/v1/hotel/guest_users/auth/routes');
+const chatAssistance = require('../api/v1/hotel/assistance_chat/routes');
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use('/audit_logs', auditLogs);
 router.use('/hotel_rooms', room_management);
 router.use('/guest_accounts', guestRecords);
 router.use('/guest_accounts/auth', guestLogin);
+router.use('/hotel-chats', chatAssistance);
 
 module.exports = router;
