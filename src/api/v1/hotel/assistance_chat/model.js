@@ -24,7 +24,7 @@ const chatSchema = new mongoose.Schema({
         type: Date,
         default: () => moment.tz('Asia/Manila').toDate()
     }
-})
+});
 
 const AssistanceChat = mongoose.model('hms-chats', chatSchema);
 module.exports = AssistanceChat;
