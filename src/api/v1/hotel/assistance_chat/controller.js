@@ -74,14 +74,13 @@ const newChat = async (req, res) => {
 
         await newChatData.save();
 
-        return res.status(201).json({
+        res.status(201).json({
             statusCode: 201,
             body: JSON.stringify({ message: 'Chat message created successfully.', chat: newChatData })
         });
 
     } catch (error) {
-        console.error('Error creating chat message:', error);
-        return res.status(500).json({
+        res.status(500).json({
             statusCode: 500,
             body: JSON.stringify({ message: 'Internal server error.' })
         });
