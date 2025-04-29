@@ -142,6 +142,41 @@ const createRoom = async (req, res) => {
     }
 };
 
+// PUT METHOD - Update a room by its _id
+const updateRoomById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        // Validate ID format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid room ID format' });
+        }
+
+        await connectToDB();
+
+        const updatedRoom = await RoomManagement.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        ).populate('processed_by_id', 'employee_id email_address employee_name username employee_role');
+
+        if (!updatedRoom) {
+            return res.status(404).json({ message: 'Room not found for update' });
+        }
+
+        res.status(200).json({
+            message: 'Room updated successfully',
+            updatedRoom: updatedRoom
+        });
+
+    } catch (error) {
+        console.error("Error updating room:", error);
+        res.status(500).json({ message: 'Error updating room', error: error.message });
+    }
+};
+
+
 // HELPERS (THE REST)
 
 function getDeviceInfo() {
@@ -157,4 +192,4 @@ function getDeviceInfo() {
     };
 }
 
-module.exports = { getRooms, getRoomsById, createRoom };
+module.exports = { getRooms, getRoomsById, createRoom, updateRoomById };

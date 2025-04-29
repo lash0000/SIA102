@@ -103,6 +103,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/hotel_rooms
           method: post
+      - httpApi:
+          path: /api/v1/hotel/hotel_rooms/{id}
+          method: put
 
   mediaFiles:
     handler: app.handler
