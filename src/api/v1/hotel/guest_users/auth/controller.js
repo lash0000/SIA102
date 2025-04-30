@@ -20,6 +20,7 @@ const connectToDB = async () => {
     }
 };
 
+// POST
 const login = async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -59,6 +60,7 @@ const login = async (req, res) => {
     }
 };
 
+// GET
 const getAllSessions = async (req, res) => {
     try {
         await connectToDB();

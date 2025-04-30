@@ -11,6 +11,7 @@ const userLogin = require('../api/v1/hotel/staff_accounts/auth/routes');
 const guestRecords = require('../api/v1/hotel/guest_users/routes');
 const guestLogin = require('../api/v1/hotel/guest_users/auth/routes');
 const chatAssistance = require('../api/v1/hotel/assistance_chat/routes');
+const reservation_queue = require('../api/v1/hotel/reservations/queues/routes');
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use('/hotel_rooms', room_management);
 router.use('/guest_accounts', guestRecords);
 router.use('/guest_accounts/auth', guestLogin);
 router.use('/hotel-chats', chatAssistance);
+router.use('/booking-reservation/queues', reservation_queue);
 
 module.exports = router;

@@ -1,15 +1,28 @@
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
 const moment = require('moment-timezone');
 
-// Import the models needed for validation
-const HotelRoom = require('../room_management/model'); // adjust path if needed
-const GuestUser = require('../guest_users/model'); // adjust path if needed
+const reservationSlot = new mongoose.Schema({
+    adult: { type: Number, required: false, default: 0 },
+    children: { type: Number, required: false, default: 0 },
+    infants: { type: Number, required: false, default: 0 }
+}, { _id: false })
 
 const Reservation_Queueing = new mongoose.Schema({
-    reservation_queues: {
+    room_reservation: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_rooms',
+        required: true
+    },
+    reservation_slot: {
+        type: reservationSlot,
+        required: false
+    },
+    check_in: {
+        type: Date,
+        required: true
+    },
+    check_out: {
+        type: Date,
         required: true
     },
     guest_issued_by: {
@@ -20,31 +33,6 @@ const Reservation_Queueing = new mongoose.Schema({
     reservation_queue_added: {
         type: Date,
         default: () => moment.tz('Asia/Manila').toDate()
-    }
-});
-
-// Pre-save validation
-Reservation_Queueing.pre('save', async function (next) {
-    try {
-        // Validate reservation_queues exists
-        const room = await HotelRoom.findById(this.reservation_queues);
-        if (!room) {
-            const error = new Error('Invalid reservation_queues ID: No matching hotel room found.');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        // Validate guest_issued_by exists
-        const guest = await GuestUser.findById(this.guest_issued_by);
-        if (!guest) {
-            const error = new Error('Invalid guest_issued_by ID: No matching guest user found.');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        next();
-    } catch (err) {
-        next(err);
     }
 });
 

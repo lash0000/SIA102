@@ -36,6 +36,23 @@ package:
 # If this does not work thru production DEADD!!!
 
 functions:
+  reservationQueue:
+    handler: app.handler
+    timeout: 28
+    events:
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues/{id}
+          method: put
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues/{id}
+          method: delete
+
   assistanceChat:
     handler: app.handler
     timeout: 28
@@ -69,6 +86,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/guest_accounts/{id}
           method: put
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts/paypal-auth
+          method: post
 
   uploadQueues:
     handler: app.handler

@@ -198,6 +198,44 @@ const updateRecord = async (req, res) => {
     }
 };
 
+// POST request for paypal refresh tokens
+const paypalLogin = async (req, res) => {
+    try {
+        await connectToDB();
+
+        const { guest_id, paypal_refresh_token } = req.body;
+
+        if (!guest_id || !paypal_refresh_token) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Calculate expiration date (1 year from now)
+        const expirationDate = new Date();
+        expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+
+        const updatedUser = await GuestUserAccount.findOneAndUpdate(
+            { guest_id },
+            {
+                paypal_refresh_token,
+                paypal_token_expiration: expirationDate
+            },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Guest user not found' });
+        }
+
+        res.status(200).json({
+            message: 'PayPal token saved successfully',
+            record: updatedUser
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error saving PayPal token', error: error.message });
+    }
+};
+
 module.exports = {
-    getAllRecords, getRecordById, createRecord, updateRecord
+    getAllRecords, getRecordById, createRecord, updateRecord, paypalLogin
 }

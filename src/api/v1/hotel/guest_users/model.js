@@ -153,6 +153,14 @@ const guestUserDetails = new mongoose.Schema({
     guest_user_date_added: {
         type: Date,
         default: () => moment.tz('Asia/Manila').toDate()
+    },
+    paypal_refresh_token: {
+        type: String,
+        default: null
+    },
+    paypal_token_expiration: {
+        type: Date,
+        default: null
     }
 })
 
