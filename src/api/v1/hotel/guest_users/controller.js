@@ -144,53 +144,63 @@ const updateRecord = async (req, res) => {
     try {
         await connectToDB();
         const { id } = req.params;
-        let updateData = req.body;
+        const updateData = req.body;
 
+        // Find the existing record
         const existingRecord = await GuestUserAccount.findOne({ _id: id });
         if (!existingRecord) {
             return res.status(404).json({ message: 'This employee record cannot be found' });
         }
 
-        // Check for duplicate email
-        const duplicateChecks = await GuestUserAccount.findOne({
-            $or: [
-                { email_address: updateData.email_address },
-            ],
-            guest_id: { $ne: id },
-        });
-
-        if (duplicateChecks) {
-            let duplicateField;
-            if (duplicateChecks.email_address === updateData.email_address) {
-                duplicateField = 'email_address';
-            }
-            return res.status(400).json({
-                message: `This employee record information with ${duplicateField} already exists.`,
+        // Check for duplicate email (exclude current record by _id)
+        if (updateData.email_address) {
+            const duplicateChecks = await GuestUserAccount.findOne({
+                email_address: updateData.email_address,
+                _id: { $ne: id },
             });
+
+            if (duplicateChecks) {
+                return res.status(400).json({
+                    message: `This employee record information with email_address already exists.`,
+                });
+            }
         }
 
-        // Hash password if updated
+        // Prepare the payload for $set update
+        const updatePayload = {};
+
+        // Handle nested name updates
+        if (updateData.firstName || updateData.lastName) {
+            updatePayload['guest_name.firstName'] = updateData.firstName || existingRecord.guest_name?.firstName;
+            updatePayload['guest_name.lastName'] = updateData.lastName || existingRecord.guest_name?.lastName;
+        }
+
+        // Other possible fields
+        if (updateData.email_address) updatePayload.email_address = updateData.email_address;
+        if (updateData.username) updatePayload.username = updateData.username;
+
+        // Hash password if provided
         if (updateData.guest_password) {
             const hashedPassword = await bcrypt.hash(updateData.guest_password, SALT_ROUNDS);
-            updateData.guest_password = hashedPassword;
+            updatePayload.guest_password = hashedPassword;
         }
 
-        // Perform update
+        // Perform the update with $set
         const updatedRecord = await GuestUserAccount.findOneAndUpdate(
-            { guest_id: id },
-            updateData,
+            { _id: id },
+            { $set: updatePayload },
             { new: true, runValidators: true }
         );
 
-        // Build dynamic email body
-        let emailBody = `
+        // Construct the email content
+        const emailBody = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
           <h2 style="color: #2b2b2b;">🎉 Holaa, You updated your account information!</h2>
           Based on the following details you update so far:<br><br>
-          ${updateData.first_name ? `1. First Name: ${updateData.first_name}<br>` : ''}
-          ${updateData.last_name ? `2. Last Name: ${updateData.last_name}<br>` : ''}
+          ${updateData.firstName ? `1. First Name: ${updateData.firstName}<br>` : ''}
+          ${updateData.lastName ? `2. Last Name: ${updateData.lastName}<br>` : ''}
           ${updateData.email_address ? `3. Email Address: ${updateData.email_address}<br>` : ''}
-          ${updateData.guest_password ? `4. Password: (Updated) ✅<br>` : ''}
+          ${updateData.guest_password ? `You update your account password ✅<br>` : ''}
           ${updateData.username ? `5. Username: ${updateData.username}<br>` : ''}
           <p style="margin-top: 20px;">Thank you for choosing our Hotel Management Services.</p>
           <hr>
@@ -198,7 +208,7 @@ const updateRecord = async (req, res) => {
         </div>
         `;
 
-        // Send the email if there's an email address to notify
+        // Send update email
         if (existingRecord.email_address) {
             await Send(existingRecord.email_address, emailBody);
         }
@@ -220,6 +230,7 @@ const updateRecord = async (req, res) => {
         }
     }
 };
+
 
 // POST request for paypal refresh tokens
 const paypalLogin = async (req, res) => {

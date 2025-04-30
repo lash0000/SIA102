@@ -22,6 +22,8 @@ provider:
     MAIL_PASSWORD: ${env:MAIL_PASSWORD}
     JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET}
     JWT_ACCESS_SECRET: ${env:JWT_ACCESS_SECRET}
+    KEY_ID: ${env.KEY_ID}
+    SECRET_ACCESS_ID: ${env.SECRET_ACCESS_ID}
 
 # Package configuration (This is already save my life ^^)
 package:
