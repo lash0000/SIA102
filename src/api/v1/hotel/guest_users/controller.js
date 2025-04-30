@@ -40,8 +40,9 @@ const getRecordById = async (req, res) => {
     try {
         await connectToDB();
         const { id } = req.params;
-        const employeeRecord = await GuestUserAccount.findOne({ guest_id: id })
-            .populate('created_by', '_id guest_id email_address employee_name username employee_role');
+        const employeeRecord = await GuestUserAccount.findOne({ _id: id })
+            .populate()
+            .exec();
 
         if (!employeeRecord) {
             return res.status(404).json({ message: 'Employee record not found' });
