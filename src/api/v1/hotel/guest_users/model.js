@@ -1,5 +1,5 @@
 /*
-*   This feature is for Employees Information Management (HRIS)
+*   This feature is for Guest Account (Web-based)
 */
 
 const mongoose = require('mongoose');

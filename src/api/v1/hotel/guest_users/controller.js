@@ -146,13 +146,12 @@ const updateRecord = async (req, res) => {
         const { id } = req.params;
         let updateData = req.body;
 
-        // Check if the account exists
-        const existingRecord = await GuestUserAccount.findOne({ guest_id: id });
+        const existingRecord = await GuestUserAccount.findOne({ _id: id });
         if (!existingRecord) {
             return res.status(404).json({ message: 'This employee record cannot be found' });
         }
 
-        // Check for duplicate email or phone number
+        // Check for duplicate email
         const duplicateChecks = await GuestUserAccount.findOne({
             $or: [
                 { email_address: updateData.email_address },
@@ -170,24 +169,47 @@ const updateRecord = async (req, res) => {
             });
         }
 
-        // Hash the password if it's being updated
+        // Hash password if updated
         if (updateData.guest_password) {
             const hashedPassword = await bcrypt.hash(updateData.guest_password, SALT_ROUNDS);
             updateData.guest_password = hashedPassword;
         }
 
-        // Update data
+        // Perform update
         const updatedRecord = await GuestUserAccount.findOneAndUpdate(
             { guest_id: id },
             updateData,
             { new: true, runValidators: true }
         );
 
-        res.status(200).json({ message: 'This Employee Record data was updated successfully', record: updatedRecord });
+        // Build dynamic email body
+        let emailBody = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
+          <h2 style="color: #2b2b2b;">🎉 Holaa, You updated your account information!</h2>
+          Based on the following details you update so far:<br><br>
+          ${updateData.first_name ? `1. First Name: ${updateData.first_name}<br>` : ''}
+          ${updateData.last_name ? `2. Last Name: ${updateData.last_name}<br>` : ''}
+          ${updateData.email_address ? `3. Email Address: ${updateData.email_address}<br>` : ''}
+          ${updateData.guest_password ? `4. Password: (Updated) ✅<br>` : ''}
+          ${updateData.username ? `5. Username: ${updateData.username}<br>` : ''}
+          <p style="margin-top: 20px;">Thank you for choosing our Hotel Management Services.</p>
+          <hr>
+          <p style="font-size: 12px; color: #888;">This inbox is a support to tell the latest status of your account.</p>
+        </div>
+        `;
+
+        // Send the email if there's an email address to notify
+        if (existingRecord.email_address) {
+            await Send(existingRecord.email_address, emailBody);
+        }
+
+        res.status(200).json({
+            message: 'This Employee Record data was updated successfully',
+            record: updatedRecord,
+        });
 
     } catch (error) {
         if (error.name === 'ValidationError') {
-            // Handle Mongoose validation errors
             const validationErrors = Object.keys(error.errors).map(key => ({
                 field: key,
                 message: error.errors[key].message,
