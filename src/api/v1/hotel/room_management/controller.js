@@ -86,6 +86,7 @@ const getRoomsById = async (req, res) => {
 const createRoom = async (req, res) => {
     try {
         const {
+            hotel_type,
             location,
             slot_availability,
             room_status,
@@ -105,6 +106,7 @@ const createRoom = async (req, res) => {
         // First Assessment: Add Data
 
         const newRoom = new RoomManagement({
+            hotel_type,
             location,
             slot_availability,
             room_status,

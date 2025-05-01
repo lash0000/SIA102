@@ -29,7 +29,7 @@ const fullAddress = new mongoose.Schema({
 }, { _id: false });
 
 const roomManagementSchema = new mongoose.Schema({
-    hotel_type: { type: String, required: false },
+    hotel_type: { type: String, required: true },
     room_status: { type: String, required: true },
     slot_availability: { type: Number, required: true },
     location: { type: fullAddress, required: false },
