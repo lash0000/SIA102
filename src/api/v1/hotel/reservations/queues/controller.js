@@ -55,17 +55,11 @@ const createBookQueue = async (req, res) => {
         return res.status(400).json({
             message: 'Missing field: room_reservation and guest_issued_by fields are required.'
         });
-    }
-
-    // Additional required fields check
-    if (!check_in || !check_out) {
+    } else if (!check_in || !check_out) {
         return res.status(400).json({
             message: 'Missing field: check_in and check_out are required.'
         });
-    }
-
-    // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(room_reservation) || !mongoose.Types.ObjectId.isValid(guest_issued_by)) {
+    } else if (!mongoose.Types.ObjectId.isValid(room_reservation) || !mongoose.Types.ObjectId.isValid(guest_issued_by)) {
         return res.status(400).json({
             message: 'Invalid ObjectId format in room_reservation or guest_issued_by.'
         });

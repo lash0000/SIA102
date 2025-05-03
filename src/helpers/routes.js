@@ -12,6 +12,9 @@ const guestRecords = require('../api/v1/hotel/guest_users/routes');
 const guestLogin = require('../api/v1/hotel/guest_users/auth/routes');
 const chatAssistance = require('../api/v1/hotel/assistance_chat/routes');
 const reservation_queue = require('../api/v1/hotel/reservations/queues/routes');
+const booking_reservations = require('../api/v1/hotel/reservations/booking/routes');
+const activityLogs = require('../api/v1/hotel/activity_logs/routes');
+const guestNotify = require('../api/v1/hotel/guest_notify/routes');
 
 const router = express.Router();
 
@@ -27,5 +30,8 @@ router.use('/guest_accounts', guestRecords);
 router.use('/guest_accounts/auth', guestLogin);
 router.use('/hotel-chats', chatAssistance);
 router.use('/booking-reservation/queues', reservation_queue);
+router.use('/booking-reservation', booking_reservations);
+router.use('/hotel-activity-logs', activityLogs);
+router.use('/guest-notify', guestNotify);
 
 module.exports = router;
