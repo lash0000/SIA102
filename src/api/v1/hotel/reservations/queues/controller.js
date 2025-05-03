@@ -48,7 +48,7 @@ const getAllBookQueue = async (req, res) => {
 const createBookQueue = async (req, res) => {
     await connectToDB();
 
-    const { room_reservation, guest_issued_by, check_in, check_out, reservation_slot } = req.body;
+    const { room_reservation, guest_issued_by, check_in, check_out, reservation_slot, initial_price_total } = req.body;
 
     // Basic body field validation
     if (!room_reservation || !guest_issued_by) {
@@ -88,7 +88,8 @@ const createBookQueue = async (req, res) => {
             guest_issued_by,
             check_in,
             check_out,
-            reservation_slot
+            reservation_slot,
+            initial_price_total
         });
 
         const savedReservation = await newReservation.save();

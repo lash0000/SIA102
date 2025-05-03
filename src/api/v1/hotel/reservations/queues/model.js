@@ -25,6 +25,10 @@ const Reservation_Queueing = new mongoose.Schema({
         type: Date,
         required: true
     },
+    initial_price_total: {
+        type: Number,
+        required: true
+    },
     guest_issued_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_guest_users',
