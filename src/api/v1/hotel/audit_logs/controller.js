@@ -19,6 +19,7 @@ const connectToDB = async () => {
     }
 };
 
+// GET ALL
 const getAllLogs = async (req, res) => {
     try {
         await connectToDB();

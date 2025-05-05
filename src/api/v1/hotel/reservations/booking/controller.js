@@ -7,7 +7,7 @@ const Booking_Reservation = require('./model');
 const { RoomManagement } = require('../../room_management/model');
 const BookingReservation_Queueing = require('../queues/model');
 const { Send } = require('../../../../../../global/config/NodeMailer');
-const moment = require('moment-timezone');
+const { ActivityLogs } = require('../../activity_logs/model'); 
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -29,6 +29,7 @@ const getAllBookings = async (req, res) => {
 
         // Fetch all bookings with populated fields
         const bookings = await Booking_Reservation.find()
+            .sort({ booking_date_added: -1 })
             .populate({
                 path: 'reservation_room',
                 select: '-processed_by_id' // Exclude processed_by_id
@@ -51,30 +52,82 @@ const getAllBookings = async (req, res) => {
     }
 };
 
-// GET: Retrieve a single booking by ID with populated fields
+// GET: Retrieve a single booking by ID with populated fields (Applicable for per user records)
 const getBookingsById = async (req, res) => {
     try {
-        // Ensure database connection
         await connectToDB();
 
-        // Extract booking ID from params
-        const { _id } = req.params;
+        const { id } = req.params;
 
-        // Validate ObjectId format
-        if (!mongoose.Types.ObjectId.isValid(_id)) {
+        // Validate the user ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+
+        // Fetch all bookings where booking_issued_by matches user ID
+        const bookings = await Booking_Reservation.find({ booking_issued_by: id })
+            .populate({
+                path: 'reservation_room',
+                select: '-processed_by_id',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files'
+                }
+            })
+            .populate('booking_issued_by');
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No bookings found for this user'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Bookings retrieved successfully',
+            data: bookings
+        });
+    } catch (error) {
+        console.error('Error in getBookingsByUserId:', error);
+        res.status(500).json({
+            message: 'Server error while retrieving bookings',
+            error: error.message
+        });
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
+// GET: Retrieve a single booking by its main _id (Applicable for receipt retrieval)
+const getBookById = async (req, res) => {
+    try {
+        await connectToDB();
+
+        const { id } = req.params;
+
+        // Validate the booking ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid booking ID format'
             });
         }
 
-        // Fetch booking by ID with populated fields
-        const booking = await Booking_Reservation.findById(_id)
+        // Fetch the booking by its main _id
+        const booking = await Booking_Reservation.findById(id)
             .populate({
                 path: 'reservation_room',
-                select: '-processed_by_id' // Exclude processed_by_id
+                select: '-processed_by_id',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files'
+                }
             })
-            .populate('booking_issued_by'); // Include all fields
+            .populate('booking_issued_by');
 
         if (!booking) {
             return res.status(404).json({
@@ -83,15 +136,15 @@ const getBookingsById = async (req, res) => {
             });
         }
 
-        // Respond with success
         res.status(200).json({
             success: true,
-            message: 'Booking retrieved successfully',
+            message: 'Booking retrieved for receipt successfully',
             data: booking
         });
     } catch (error) {
-        console.error('Error in getBookingsById:', error);
+        console.error('Error in getBookById:', error);
         res.status(500).json({
+            success: false,
             message: 'Server error while retrieving booking',
             error: error.message
         });
@@ -116,23 +169,30 @@ const addBookReserve = async (req, res) => {
         } = req.body;
 
         // Validate required fields
-        if (!reservation_room || !booking_issued_by || !mode_of_payment || !receipt_record) {
+        if (!reservation_room || !Array.isArray(reservation_room) || reservation_room.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields: reservation_room, booking_issued_by, mode_of_payment, or receipt_record'
+                message: 'reservation_room must be a non-empty array of room IDs'
             });
-        } else if (contact_information) {
-            const { email_address, contact_first_name, contact_last_name } = contact_information;
-            if (!email_address || !contact_first_name || !contact_last_name) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Missing required contact information fields: email_address, contact_first_name, or contact_last_name'
-                });
-            }
-        } else {
+        }
+        if (!booking_issued_by || !mode_of_payment || !receipt_record) {
             return res.status(400).json({
                 success: false,
-                message: 'Contact information is required for sending confirmation email'
+                message: 'Missing required fields: booking_issued_by, mode_of_payment, or receipt_record'
+            });
+        }
+        if (!contact_information || typeof contact_information !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Contact information is required and must be an object'
+            });
+        }
+
+        const { email_address, contact_first_name, contact_last_name, contact_name_suffix } = contact_information;
+        if (!email_address || !contact_first_name || !contact_last_name) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required contact information fields: email_address, contact_first_name, or contact_last_name'
             });
         }
 
@@ -141,58 +201,58 @@ const addBookReserve = async (req, res) => {
                 success: false,
                 message: 'Invalid or missing order_reservation_total in receipt_record'
             });
-        } else if (!mongoose.Types.ObjectId.isValid(booking_issued_by)) {
+        }
+        if (!mongoose.Types.ObjectId.isValid(booking_issued_by)) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid booking_issued_by ID format'
             });
         }
 
-        // Validate mode_of_payment and set receipt_book_expiration for Pay thru Counter
-        if (mode_of_payment === 'Pay thru Counter') {
-            if (!contact_information) {
+        // Validate all room IDs in the reservation_room array
+        for (const roomId of reservation_room) {
+            if (!mongoose.Types.ObjectId.isValid(roomId)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Contact information is required for Pay thru Counter bookings'
+                    message: `Invalid room ID format: ${roomId}`
                 });
             }
-            // Set receipt_book_expiration to 15 hours from now in Asia/Manila timezone
-            contact_information.receipt_book_expiration = moment.tz('Asia/Manila').add(15, 'hours').toDate();
-        } else if (contact_information.receipt_book_expiration) {
-            // Prevent receipt_book_expiration for non-Pay thru Counter bookings
-            delete contact_information.receipt_book_expiration;
         }
 
-        // Check if the room exists and has available slots
-        const room = await RoomManagement.findById(reservation_room);
-        if (!room) {
-            return res.status(404).json({
-                success: false,
-                message: 'Room not found'
-            });
-        } else if (room.slot_availability <= 0) {
+        // Check if all rooms exist and have available slots
+        const rooms = await RoomManagement.find({ _id: { $in: reservation_room } });
+        if (rooms.length !== reservation_room.length) {
             return res.status(400).json({
                 success: false,
-                message: 'No available slots for this room'
+                message: 'One or more rooms not found'
             });
+        }
+        for (const room of rooms) {
+            if (room.slot_availability <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `No available slots for room: ${room.room_name || room._id}`
+                });
+            }
         }
 
         // Create new booking reservation
         const newBooking = new Booking_Reservation({
-            reservation_room,
+            reservation_room, // Store array of room IDs
             booking_issued_by,
             contact_information,
             mode_of_payment,
             receipt_record,
-            booking_date_added: new Date() 
+            booking_date_added: new Date()
         });
 
         // Save the booking
         const savedBooking = await newBooking.save();
+        console.log('Saved booking receipt_expiration:', savedBooking.receipt_record.receipt_expiration);
 
-        // Decrease slot_availability by 1
-        await RoomManagement.findByIdAndUpdate(
-            reservation_room,
+        // Decrease slot_availability by 1 for each room
+        await RoomManagement.updateMany(
+            { _id: { $in: reservation_room } },
             { $inc: { slot_availability: -1 } },
             { new: true }
         );
@@ -200,9 +260,17 @@ const addBookReserve = async (req, res) => {
         // Delete queue records associated with booking_issued_by
         await BookingReservation_Queueing.deleteMany({ guest_issued_by: booking_issued_by });
 
+        // Create and save activity log
+        const newActivityLog = new ActivityLogs({
+            issued_by: booking_issued_by,
+            action: 'Hotel Booking',
+            action_description: `You booked ${reservation_room.length} hotels with the total of ₱${receipt_record.order_reservation_total.toFixed(2)}`
+        });
+        await newActivityLog.save();
+
         // Compose email
-        const { email_address, contact_first_name, contact_last_name, receipt_book_expiration } = contact_information;
-        const fullName = `${contact_first_name} ${contact_last_name}${contact_information.contact_name_suffix ? ' ' + contact_information.contact_name_suffix : ''}`;
+        const fullName = `${contact_first_name} ${contact_last_name}${contact_name_suffix ? ' ' + contact_name_suffix : ''}`;
+        const roomNames = rooms.map(room => room.room_name || `Room ${room._id}`).join(', ');
         const emailBody = `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #2b2b2b;">🎉 Congratulations, ${fullName}!</h2>
@@ -210,10 +278,10 @@ const addBookReserve = async (req, res) => {
                 <p>We’re excited to welcome you to our hotel. Below are the details of your reservation:</p>
                 <ul style="list-style: none; padding: 0;">
                     <li><strong>Booking ID:</strong> ${savedBooking._id}</li>
-                    <li><strong>Room:</strong> ${room.room_name || 'Room ' + reservation_room}</li>
+                    <li><strong>Rooms:</strong> ${roomNames}</li>
                     <li><strong>Total Amount:</strong> ₱${receipt_record.order_reservation_total.toFixed(2)}</li>
                     <li><strong>Payment Method:</strong> ${mode_of_payment}</li>
-                    ${mode_of_payment === 'Pay thru Counter' && receipt_book_expiration ? `<li><strong>Payment Deadline:</strong> ${new Date(receipt_book_expiration).toLocaleString('en-US', { timeZone: 'Asia/Manila' })}</li>` : ''}
+                    <li><strong>Expires:</strong> ${new Date(savedBooking.receipt_record.receipt_expiration).toLocaleString()}</li>
                     <li><strong>Booking Date:</strong> ${new Date(savedBooking.booking_date_added).toLocaleDateString()}</li>
                 </ul>
                 ${mode_of_payment === 'Pay thru Counter' ? '<p style="margin-top: 20px; color: #d32f2f;"><strong>Please complete your payment at the counter by the deadline to confirm your booking.</strong></p>' : ''}
@@ -229,10 +297,9 @@ const addBookReserve = async (req, res) => {
         // Respond with success
         res.status(201).json({
             success: true,
-            message: 'Booking reservation created successfully, queue cleared, and confirmation email sent',
+            message: 'Booking reservation created successfully, queue cleared, activity logged, and confirmation email sent',
             data: savedBooking
         });
-
     } catch (error) {
         console.error('Error in addBookReserve:', error);
         res.status(500).json({
@@ -372,4 +439,4 @@ const addBookReservation = async (req, res) => {
     }
 }
 
-module.exports = { getAllBookings, getBookingsById, addBookReserve, addBookReservation };
+module.exports = { getAllBookings, getBookingsById, getBookById, addBookReserve, addBookReservation };

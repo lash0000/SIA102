@@ -2,11 +2,10 @@
 *   This feature is for Booking Reservation Group (Guests).
 */
 
-
 const BookingReservation_Queueing = require('./model');
 const mongoose = require('mongoose');
 const { RoomManagement } = require('../../room_management/model');
-const GuestUser = require('../../guest_users/model');
+const GuestUserAccount = require('../../guest_users/model');
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -20,14 +19,21 @@ const connectToDB = async () => {
     }
 };
 
-//GET
+// GET - Fetch all booking queues with nested population
 const getAllBookQueue = async (req, res) => {
     await connectToDB();
 
     try {
         const reservations = await BookingReservation_Queueing.find()
-            .populate('room_reservation', '_id room_status location room_details __v hotel_type')
-            .populate('guest_issued_by')
+            .populate({
+                path: 'room_reservation',
+                select: '_id room_status location room_details hotel_type',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files', // Adjust to the actual model name for room_image
+                }
+            })
+            .populate('guest_issued_by', '_id email_address guest_name username guest_role guest_id guest_user_date_added')
             .exec();
 
         res.status(200).json({
@@ -43,6 +49,44 @@ const getAllBookQueue = async (req, res) => {
     }
 };
 
+// GET - Fetch booking queues by guest ID
+const getBookQueueByGuestId = async (req, res) => {
+    await connectToDB();
+
+    const { id } = req.params;
+
+    try {
+        // Find all reservations with the given reservation_id
+        const reservations = await BookingReservation_Queueing.find({ reservation_id: id })
+            .populate({
+                path: 'room_reservation',
+                select: '_id room_status location room_details hotel_type',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files'
+                }
+            })
+            .populate('guest_issued_by', '_id email_address guest_name username guest_role guest_id guest_user_date_added')
+            .exec();
+
+        if (!reservations || reservations.length === 0) {
+            return res.status(404).json({
+                message: 'No reservations found for this reservation_id.'
+            });
+        }
+
+        res.status(200).json({
+            data: reservations
+        });
+
+    } catch (error) {
+        console.error('Error fetching reservations for reservation_id:', error);
+        res.status(500).json({
+            message: 'Failed to fetch reservations.',
+            error: error.message
+        });
+    }
+};
 
 // POST - Create a new Booking Reservation Queue
 const createBookQueue = async (req, res) => {
@@ -75,15 +119,27 @@ const createBookQueue = async (req, res) => {
         }
 
         // Check if GuestUser exists
-        const guestExists = await GuestUser.findById(guest_issued_by).lean();
+        const guestExists = await GuestUserAccount.findById(guest_issued_by).lean();
         if (!guestExists) {
             return res.status(404).json({
                 message: 'GuestUser with the given ID not found.'
             });
         }
 
-        // Create new reservation
+        // Check if a reservation with the same room_reservation and guest_issued_by already exists
+        const existingReservation = await BookingReservation_Queueing.findOne({
+            room_reservation,
+            guest_issued_by
+        }).lean();
+        if (existingReservation) {
+            return res.status(400).json({
+                message: 'You have already reserved this room.'
+            });
+        }
+
+        // Create new reservation with reservation_id set to guest_issued_by
         const newReservation = new BookingReservation_Queueing({
+            reservation_id: guest_issued_by.toString(),
             room_reservation,
             guest_issued_by,
             check_in,
@@ -107,8 +163,7 @@ const createBookQueue = async (req, res) => {
         });
     }
 };
-
-//PUT
+// PUT - Update a booking queue
 const updateBookQueue = async (req, res) => {
     await connectToDB();
 
@@ -145,7 +200,7 @@ const updateBookQueue = async (req, res) => {
     }
 };
 
-//DELETE
+// DELETE - Delete a booking queue
 const deleteBookQueue = async (req, res) => {
     await connectToDB();
 
@@ -179,6 +234,7 @@ const deleteBookQueue = async (req, res) => {
 
 module.exports = {
     getAllBookQueue,
+    getBookQueueByGuestId,
     createBookQueue,
     updateBookQueue,
     deleteBookQueue

@@ -77,6 +77,9 @@ functions:
           path: /api/v1/hotel/booking-reservation/{id}
           method: get
       - httpApi:
+          path: /api/v1/hotel/booking-reservation/book/{id}
+          method: get
+      - httpApi:
           path: /api/v1/hotel/booking-reservation
           method: post
       - httpApi:
@@ -89,6 +92,9 @@ functions:
     events:
       - httpApi:
           path: /api/v1/hotel/booking-reservation/queues
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues/{id}
           method: get
       - httpApi:
           path: /api/v1/hotel/booking-reservation/queues

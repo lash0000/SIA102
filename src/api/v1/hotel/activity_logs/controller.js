@@ -35,7 +35,7 @@ const getActivityLogs = async (req, res) => {
     }
 };
 
-// GET: Retrieve activity log by ID
+// GET: Retrieve activity logs by issued_by ID
 const getActivityLogById = async (req, res) => {
     try {
         await connectToDB();
@@ -45,30 +45,31 @@ const getActivityLogById = async (req, res) => {
         if (!mongoose.isValidObjectId(id)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid activity log ID'
+                message: 'Invalid issued_by ID'
             });
         }
 
-        // Fetch log
-        const log = await ActivityLogs.findById(id)
-            .populate('issued_by', '_id email_address guest_name username') // Adjust fields as needed
+        // Fetch logs where issued_by matches the provided ID
+        const logs = await ActivityLogs.find({ issued_by: id })
+            .populate('issued_by', '_id email_address guest_name username')
+            .sort({ action_timestamp: -1 })
             .lean();
 
-        if (!log) {
+        if (!logs || logs.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Activity log not found'
+                message: 'No activity logs found for this user'
             });
         }
 
         res.status(200).json({
-            data: log
+            data: logs
         });
     } catch (error) {
-        console.error('Error fetching activity log:', error);
+        console.error('Error fetching activity logs:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching activity log'
+            message: 'Server error while fetching activity logs'
         });
     }
 };

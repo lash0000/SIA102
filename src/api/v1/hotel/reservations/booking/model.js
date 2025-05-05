@@ -7,21 +7,20 @@ const contactInfo = new mongoose.Schema({
     contact_first_name: { type: String, required: true },
     contact_last_name: { type: String, required: true },
     contact_name_suffix: { type: String, required: false },
-    // booking_expiration (Applicable for Pay thru Counter as Mode of payment)
-    receipt_book_expiration: { type: Date, required: false }
 }, { _id: false })
 
 const orderReceipt = new mongoose.Schema({
     issuance_date: { type: Date, default: () => moment.tz('Asia/Manila').toDate() },
+    receipt_expiration: { type: Date, default: () => moment.tz('Asia/Manila').add(15, 'hours').toDate() },
     order_reservation_total: { type: Number, required: true },
 })
 
 const Reservations = new mongoose.Schema({
-    reservation_room: {
+    reservation_room: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_rooms',
         required: true
-    },
+    }],
     contact_information: {
         type: contactInfo,
         required: false

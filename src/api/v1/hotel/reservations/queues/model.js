@@ -5,9 +5,13 @@ const reservationSlot = new mongoose.Schema({
     adult: { type: Number, required: false, default: 0 },
     children: { type: Number, required: false, default: 0 },
     infants: { type: Number, required: false, default: 0 }
-}, { _id: false })
+}, { _id: false });
 
 const Reservation_Queueing = new mongoose.Schema({
+    reservation_id: {
+        type: String,
+        required: true
+    },
     room_reservation: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_rooms',
