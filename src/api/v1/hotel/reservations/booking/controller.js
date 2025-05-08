@@ -7,7 +7,9 @@ const Booking_Reservation = require('./model');
 const { RoomManagement } = require('../../room_management/model');
 const BookingReservation_Queueing = require('../queues/model');
 const { Send } = require('../../../../../../global/config/NodeMailer');
-const { ActivityLogs } = require('../../activity_logs/model'); 
+const { ActivityLogs } = require('../../activity_logs/model');
+const ArchiveBooking = require('./archive/model'); 
+// I want you to use this to create another POST function named addArchive
 
 // Ensure proper database name usage in connection
 const connectToDB = async () => {
@@ -32,9 +34,13 @@ const getAllBookings = async (req, res) => {
             .sort({ booking_date_added: -1 })
             .populate({
                 path: 'reservation_room',
-                select: '-processed_by_id' // Exclude processed_by_id
+                select: '-processed_by_id',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files'
+                }
             })
-            .populate('booking_issued_by'); // Include all fields
+            .populate('booking_issued_by');
 
         // Respond with success
         res.status(200).json({
@@ -439,4 +445,85 @@ const addBookReservation = async (req, res) => {
     }
 }
 
-module.exports = { getAllBookings, getBookingsById, getBookById, addBookReserve, addBookReservation };
+const addArchive = async (req, res) => {
+    try {
+        await connectToDB();
+        const { reservation_room, booking_archive } = req.body;
+
+        // Validate required fields
+        if (!reservation_room || !booking_archive) {
+            return res.status(400).json({ message: 'reservation_room and booking_archive are required' });
+        }
+
+        // Create new archive record
+        const newArchive = new ArchiveBooking({
+            reservation_room,
+            booking_archive
+        });
+
+        // Save to database
+        const savedArchive = await newArchive.save();
+        res.status(201).json({
+            message: 'Archive created successfully',
+            archive: savedArchive
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error creating archive',
+            error: error.message
+        });
+    }
+};
+
+// GET: Retrieve all archive records
+const getAllArchives = async (req, res) => {
+    try {
+        await connectToDB();
+        const archives = await ArchiveBooking.find()
+            .populate('reservation_room')
+            .populate('booking_archive');
+        
+        res.status(200).json({
+            message: 'Archives retrieved successfully',
+            archives
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error retrieving archives',
+            error: error.message
+        });
+    }
+};
+
+// GET: Retrieve archive records by booking_archive ID
+const getAllArchivesById = async (req, res) => {
+    try {
+        await connectToDB();
+        const { id } = req.params;
+
+        // Validate id
+        if (!id) {
+            return res.status(400).json({ message: 'id is required' });
+        }
+
+        const archives = await ArchiveBooking.find({ booking_archive: id })
+            .populate('reservation_room')
+            .populate('booking_archive');
+
+        if (!archives.length) {
+            return res.status(404).json({ message: 'No archives found for this booking ID' });
+        }
+
+        res.status(200).json({
+            message: 'Archives retrieved successfully',
+            archives
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error retrieving archives by ID',
+            error: error.message
+        });
+    }
+};
+
+module.exports = { getAllBookings, getBookingsById, getBookById, addBookReserve, addBookReservation, getAllArchives, getAllArchivesById, addArchive };

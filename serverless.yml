@@ -71,7 +71,13 @@ functions:
     timeout: 28
     events:
       - httpApi:
-          path: /api/v1/hotel/booking-reservation
+          path: /api/v1/hotel/booking-reservation/archives
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/archives
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/archives/{id}
           method: get
       - httpApi:
           path: /api/v1/hotel/booking-reservation/{id}
