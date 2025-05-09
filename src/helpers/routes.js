@@ -15,7 +15,7 @@ const reservation_queue = require('../api/v1/hotel/reservations/queues/routes');
 const booking_reservations = require('../api/v1/hotel/reservations/booking/routes');
 const activityLogs = require('../api/v1/hotel/activity_logs/routes');
 const guestNotify = require('../api/v1/hotel/guest_notify/routes');
-const attendanceLog = require('../api/v1/hotel/guest_notify/routes');
+const attendanceLog = require('../api/v1/hotel/attendance/routes');
 
 const router = express.Router();
 

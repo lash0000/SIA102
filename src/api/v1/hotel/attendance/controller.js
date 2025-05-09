@@ -94,5 +94,4 @@ const createAttendance = async (req, res) => {
         });
     }
 };
-
 module.exports = { getAllAttendance, createAttendance };
