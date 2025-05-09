@@ -38,6 +38,17 @@ package:
 # If this does not work thru production DEADD!!!
 
 functions:
+  attendanceLogs:
+    handler: app.handler
+    timeout: 28
+    events:
+      - httpApi:
+          path: /api/v1/hotel/attendance-log
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/attendance-log
+          method: post
+
   guestNotify:
     handler: app.handler
     timeout: 28
@@ -85,6 +96,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/booking-reservation/book/{id}
           method: get
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/book/{id}
+          method: put
       - httpApi:
           path: /api/v1/hotel/booking-reservation
           method: post

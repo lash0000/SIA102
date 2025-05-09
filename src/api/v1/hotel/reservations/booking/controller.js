@@ -484,7 +484,7 @@ const updateBookingHandledBy = async (req, res) => {
         await connectToDB();
 
         const { id } = req.params;
-        const { handled_by } = req.body;
+        const { handled_by, email_address } = req.body;
 
         // Validate booking ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -499,6 +499,14 @@ const updateBookingHandledBy = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid handled_by ID format'
+            });
+        }
+
+        // Validate email_address
+        if (!email_address || typeof email_address !== 'string' || !email_address.includes('@')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Valid email_address is required'
             });
         }
 
@@ -539,9 +547,31 @@ const updateBookingHandledBy = async (req, res) => {
             .populate('booking_issued_by')
             .populate('handled_by');
 
+        // Compose email
+        const lastUpdated = new Date();
+        const emailBody = `
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #2b2b2b;">Booking Reservation Updated</h2>
+                <p>Dear Guest,</p>
+                <p>Your booking reservation payment has been successfully updated. Below are the details:</p>
+                <ul style="list-style: none; padding: 0;">
+                    <li><strong>Booking ID:</strong> ${populatedBooking._id}</li>
+                    <li><strong>Mode of Payment:</strong> ${populatedBooking.mode_of_payment}</li>
+                    <li><strong>Payment Status:</strong> ${populatedBooking.payment_status || 'Not specified'}</li>
+                    <li><strong>Last Updated:</strong> ${lastUpdated.toLocaleString()}</li>
+                </ul>
+                <p style="margin-top: 20px;">If you have any questions, please contact our support team.</p>
+                <hr>
+                <p style="font-size: 12px; color: #888;">Thank you for choosing our Hotel Management Services!</p>
+            </div>
+        `;
+
+        // Send confirmation email
+        await Send(email_address, emailBody);
+
         res.status(200).json({
             success: true,
-            message: 'Booking handled_by updated successfully',
+            message: 'Booking handled_by updated successfully and confirmation email sent',
             data: populatedBooking
         });
     } catch (error) {
