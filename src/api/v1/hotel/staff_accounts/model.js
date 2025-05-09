@@ -120,6 +120,10 @@ const employeeStaffDetails = new mongoose.Schema({
         type: String,
         default: uuidv4,
     },
+    rfid_number: {
+        type: Number,
+        required: false
+    },
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_employees_staff_records',

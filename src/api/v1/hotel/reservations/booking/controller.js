@@ -8,6 +8,7 @@ const { RoomManagement } = require('../../room_management/model');
 const BookingReservation_Queueing = require('../queues/model');
 const { Send } = require('../../../../../../global/config/NodeMailer');
 const { ActivityLogs } = require('../../activity_logs/model');
+const StaffAccount = require('../../staff_accounts/model');
 const ArchiveBooking = require('./archive/model'); 
 // I want you to use this to create another POST function named addArchive
 
@@ -40,7 +41,8 @@ const getAllBookings = async (req, res) => {
                     model: 'room_media_files'
                 }
             })
-            .populate('booking_issued_by');
+            .populate('booking_issued_by')
+            .populate('handled_by');
 
         // Respond with success
         res.status(200).json({
@@ -83,7 +85,8 @@ const getBookingsById = async (req, res) => {
                     model: 'room_media_files'
                 }
             })
-            .populate('booking_issued_by');
+            .populate('booking_issued_by')
+            .populate('handled_by');
 
         if (!bookings || bookings.length === 0) {
             return res.status(404).json({
@@ -475,6 +478,84 @@ const addArchive = async (req, res) => {
     }
 };
 
+// PUT: Update the handled_by field of a booking
+const updateBookingHandledBy = async (req, res) => {
+    try {
+        await connectToDB();
+
+        const { id } = req.params;
+        const { handled_by } = req.body;
+
+        // Validate booking ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid booking ID format'
+            });
+        }
+
+        // Validate handled_by ID if provided
+        if (handled_by && !mongoose.Types.ObjectId.isValid(handled_by)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid handled_by ID format'
+            });
+        }
+
+        // Check if the booking exists
+        const booking = await Booking_Reservation.findById(id);
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: 'Booking not found'
+            });
+        }
+
+        // If handled_by is provided, verify the staff account exists
+        if (handled_by) {
+            const staff = await StaffAccount.findById(handled_by);
+            if (!staff) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Staff account not found'
+                });
+            }
+        }
+
+        // Update the handled_by field (allow null to clear the field)
+        booking.handled_by = handled_by || null;
+        const updatedBooking = await booking.save();
+
+        // Populate the updated booking for response
+        const populatedBooking = await Booking_Reservation.findById(id)
+            .populate({
+                path: 'reservation_room',
+                select: '-processed_by_id',
+                populate: {
+                    path: 'room_details.room_images',
+                    model: 'room_media_files'
+                }
+            })
+            .populate('booking_issued_by')
+            .populate('handled_by');
+
+        res.status(200).json({
+            success: true,
+            message: 'Booking handled_by updated successfully',
+            data: populatedBooking
+        });
+    } catch (error) {
+        console.error('Error in updateBookingHandledBy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating booking',
+            error: error.message
+        });
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
 // GET: Retrieve all archive records
 const getAllArchives = async (req, res) => {
     try {
@@ -526,4 +607,4 @@ const getAllArchivesById = async (req, res) => {
     }
 };
 
-module.exports = { getAllBookings, getBookingsById, getBookById, addBookReserve, addBookReservation, getAllArchives, getAllArchivesById, addArchive };
+module.exports = { getAllBookings, getBookingsById, getBookById, addBookReserve, addBookReservation, getAllArchives, getAllArchivesById, addArchive, updateBookingHandledBy };

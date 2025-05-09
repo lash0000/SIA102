@@ -38,9 +38,18 @@ const Reservations = new mongoose.Schema({
         type: orderReceipt,
         required: true
     },
+    payment_status: {
+        type: String,
+        required: false
+    },
     booking_date_added: {
         type: Date,
         default: () => moment.tz('Asia/Manila').toDate()
+    },
+    handled_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'hotel_employees_staff_records',
+        required: false
     }
 })
 
