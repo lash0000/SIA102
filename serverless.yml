@@ -101,6 +101,9 @@ functions:
           method: put
       - httpApi:
           path: /api/v1/hotel/booking-reservation
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation
           method: post
       - httpApi:
           path: /api/v1/hotel/booking-reservation/pay-counter
