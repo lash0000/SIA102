@@ -3,7 +3,7 @@ const { getAllBookings, getBookById, getBookingsById, addBookReserve, addBookRes
 
 const router = express.Router();
 
-router.get('/', getAllBookings);
+router.get('/all', getAllBookings);
 router.get('/:id', getBookingsById);
 router.get('/book/:id', getBookById);
 router.put('/book/:id', updateBookingHandledBy);

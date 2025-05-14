@@ -1,8 +1,5 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
 org: lash0000
-# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: gen-hotel
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: sia-mongo
 
 plugins:
@@ -22,10 +19,23 @@ provider:
     MAIL_PASSWORD: ${env:MAIL_PASSWORD}
     JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET}
     JWT_ACCESS_SECRET: ${env:JWT_ACCESS_SECRET}
-    KEY_ID: ${env.KEY_ID}
-    SECRET_ACCESS_ID: ${env.SECRET_ACCESS_ID}
+    KEY_ID: ${env:KEY_ID}
+    SECRET_ACCESS_ID: ${env:SECRET_ACCESS_ID}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://hotel-sia-test.vercel.app
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      maxAge: 3600
 
-# Package configuration (This is already save my life ^^)
 package:
   individually: true
   exclude:
@@ -34,8 +44,6 @@ package:
     - .vscode/**
     - venv/**
     - coverage/**
-
-# If this does not work thru production DEADD!!!
 
 functions:
   attendanceLogs:
@@ -48,6 +56,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/attendance-log
           method: post
+      - httpApi:
+          path: /api/v1/hotel/attendance-log
+          method: options
 
   guestNotify:
     handler: app.handler
@@ -62,6 +73,12 @@ functions:
       - httpApi:
           path: /api/v1/hotel/guest-notify
           method: post
+      - httpApi:
+          path: /api/v1/hotel/guest-notify
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/guest-notify/{id}
+          method: options
 
   activityLogs:
     handler: app.handler
@@ -76,6 +93,12 @@ functions:
       - httpApi:
           path: /api/v1/hotel/hotel-activity-logs
           method: post
+      - httpApi:
+          path: /api/v1/hotel/hotel-activity-logs
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/hotel-activity-logs/{id}
+          method: options
 
   bookingReserves:
     handler: app.handler
@@ -100,7 +123,7 @@ functions:
           path: /api/v1/hotel/booking-reservation/book/{id}
           method: put
       - httpApi:
-          path: /api/v1/hotel/booking-reservation
+          path: /api/v1/hotel/booking-reservation/all
           method: get
       - httpApi:
           path: /api/v1/hotel/booking-reservation
@@ -108,6 +131,27 @@ functions:
       - httpApi:
           path: /api/v1/hotel/booking-reservation/pay-counter
           method: post
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/archives
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/archives/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/book/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/all
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/pay-counter
+          method: options
 
   reservationQueue:
     handler: app.handler
@@ -128,6 +172,12 @@ functions:
       - httpApi:
           path: /api/v1/hotel/booking-reservation/queues/{id}
           method: delete
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/booking-reservation/queues/{id}
+          method: options
 
   assistanceChat:
     handler: app.handler
@@ -139,6 +189,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/hotel-chats
           method: post
+      - httpApi:
+          path: /api/v1/hotel/hotel-chats
+          method: options
 
   guestAccounts:
     handler: app.handler
@@ -165,6 +218,21 @@ functions:
       - httpApi:
           path: /api/v1/hotel/guest_accounts/paypal-auth
           method: post
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts/auth/sessions
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts/auth/login
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/guest_accounts/paypal-auth
+          method: options
 
   uploadQueues:
     handler: app.handler
@@ -185,6 +253,15 @@ functions:
       - httpApi:
           path: /api/v1/hotel/uploads/queues/user/{id}
           method: delete
+      - httpApi:
+          path: /api/v1/hotel/uploads/queues
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/queues/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/queues/user/{id}
+          method: options
 
   hotelRooms:
     handler: app.handler
@@ -202,6 +279,12 @@ functions:
       - httpApi:
           path: /api/v1/hotel/hotel_rooms/{id}
           method: put
+      - httpApi:
+          path: /api/v1/hotel/hotel_rooms
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/hotel_rooms/{id}
+          method: options
 
   mediaFiles:
     handler: app.handler
@@ -222,9 +305,6 @@ functions:
       - httpApi:
           path: /api/v1/hotel/uploads/room_management/media_files/user/{id}
           method: delete
-
-    # employee_records file
-
       - httpApi:
           path: /api/v1/hotel/uploads/employee_records/media_files
           method: get
@@ -234,14 +314,30 @@ functions:
       - httpApi:
           path: /api/v1/hotel/uploads/employee_records/media_files
           method: post
-      # delete per id
       - httpApi:
           path: /api/v1/hotel/uploads/employee_records/media_files/{id}
           method: delete
-      # delete_all
       - httpApi:
           path: /api/v1/hotel/uploads/employee_records/media_files/user/{id}
           method: delete
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/room_management/media_files/user/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/employee_records/media_files
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/employee_records/media_files/{id}
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/uploads/employee_records/media_files/user/{id}
+          method: options
 
   otpRecovery:
     handler: app.handler
@@ -253,6 +349,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/otp/forgot_password
           method: post
+      - httpApi:
+          path: /api/v1/hotel/otp/forgot_password
+          method: options
 
   otpRegistration:
     handler: app.handler
@@ -264,6 +363,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/otp/registration
           method: post
+      - httpApi:
+          path: /api/v1/hotel/otp/registration
+          method: options
 
   staffAccounts:
     handler: app.handler
@@ -293,7 +395,25 @@ functions:
       - httpApi:
           path: /api/v1/hotel/staff_accounts/{id}
           method: put
-  
+      - httpApi:
+          path: /
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/auth/sessions
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/auth/login
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/temporary
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/staff_accounts/{id}
+          method: options
+
   auditLogs:
     handler: app.handler
     timeout: 28
@@ -307,7 +427,13 @@ functions:
       - httpApi:
           path: /api/v1/hotel/audit_logs
           method: post
-  
+      - httpApi:
+          path: /api/v1/hotel/audit_logs
+          method: options
+      - httpApi:
+          path: /api/v1/hotel/audit_logs/{id}
+          method: options
+
   deleteUnnecessary:
     handler: lateSchedule.handler
     timeout: 28
@@ -318,4 +444,4 @@ functions:
     handler: queueSchedule.handler
     timeout: 28
     events:
-      - schedule: cron(*/3 * * * ? *) # every 3 minute please refer to https://crontab.guru/
+      - schedule: cron(*/3 * * * ? *)
