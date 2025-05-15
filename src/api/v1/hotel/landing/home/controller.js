@@ -31,32 +31,6 @@ const getHomeLandingPage = async (req, res) => {
     }
 };
 
-// GET method: retrieve article per id.
-const getArticleById = async (req, res) => {
-    try {
-        await connectToDB();
-        const { id } = req.params; // Get _id from URL params
-
-        // Validate ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid article ID' });
-        }
-
-        const article = await HotelLandingArticles.findById(id);
-        if (!article) {
-            return res.status(404).json({ message: 'Article not found' });
-        }
-
-        res.status(200).json(article);
-    } catch (error) {
-        console.error('Error fetching article by ID:', error);
-        res.status(500).json({ message: 'Server error while fetching article' });
-    } finally {
-        await mongoose.connection.close();
-    }
-};
-
-
 // POST method: Create or update the Home landing page data
 const createHomeLandingPage = async (req, res) => {
     try {
@@ -141,4 +115,4 @@ const updateHomeLandingPage = async (req, res) => {
 };
 
 // Export the functions
-module.exports = { getHomeLandingPage, getArticleById, createHomeLandingPage, updateHomeLandingPage };
+module.exports = { getHomeLandingPage, createHomeLandingPage, updateHomeLandingPage };
