@@ -105,8 +105,8 @@ const addComment = async (req, res) => {
 const getThreadById = async (req, res) => {
     try {
         await connectToDB();
-        const { threadId } = req.params;
-        const thread = await HotelForums.findById(threadId)
+        const { id } = req.params; // Changed from threadId to id
+        const thread = await HotelForums.findById(id)
             .populate('author', 'employee_id email_address employee_name username employee_role')
             .populate('comments.author');
         if (!thread) {
