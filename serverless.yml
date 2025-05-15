@@ -47,6 +47,25 @@ package:
     - coverage/**
 
 functions:
+  landingArticles:
+    handler: app.handler
+    timeout: 28
+    events:
+      - httpApi:
+          path: /api/v1/hotel/landing-articles
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/landing-articles/article/{id}
+          method: get
+      - httpApi:
+          path: /api/v1/hotel/landing-articles
+          method: post
+      - httpApi:
+          path: /api/v1/hotel/landing-articles/{id}
+          method: put
+      - httpApi:
+          path: /api/v1/hotel/landing-articles
+          method: options
   forumAssistance:
     handler: app.handler
     timeout: 28
@@ -77,6 +96,9 @@ functions:
       - httpApi:
           path: /api/v1/hotel/landing-home
           method: post
+      - httpApi:
+          path: /api/v1/hotel/landing-home/{id}
+          method: put
       - httpApi:
           path: /api/v1/hotel/landing-home
           method: options
@@ -212,20 +234,6 @@ functions:
           method: options
       - httpApi:
           path: /api/v1/hotel/booking-reservation/queues/{id}
-          method: options
-
-  assistanceChat:
-    handler: app.handler
-    timeout: 28
-    events:
-      - httpApi:
-          path: /api/v1/hotel/hotel-chats
-          method: get
-      - httpApi:
-          path: /api/v1/hotel/hotel-chats
-          method: post
-      - httpApi:
-          path: /api/v1/hotel/hotel-chats
           method: options
 
   guestAccounts:

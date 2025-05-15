@@ -111,5 +111,67 @@ const createLandingArticle = async (req, res) => {
     }
 };
 
+// PUT method: Update an existing landing page article by slug
+const updateLandingArticle = async (req, res) => {
+    try {
+        await connectToDB();
+        const { slug } = req.params; // Get slug from URL params
+        const updateData = req.body; // Data from request body
+
+        // Validate that some update data is provided
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No update data provided' });
+        }
+
+        // Validate content blocks if provided
+        if (updateData.content) {
+            if (!Array.isArray(updateData.content) || updateData.content.length === 0) {
+                return res.status(400).json({ message: 'Article content must be a non-empty array' });
+            }
+            for (const block of updateData.content) {
+                if (!block.type || !['paragraph', 'image', 'code', 'quote', 'heading'].includes(block.type)) {
+                    return res.status(400).json({ message: 'Each content block must have a valid type' });
+                }
+                if (!block.value) {
+                    return res.status(400).json({ message: 'Each content block must have a value' });
+                }
+            }
+        }
+
+        // Update the existing article
+        const updatedArticle = await HotelLandingArticles.findOneAndUpdate(
+            { slug },
+            {
+                $set: {
+                    ...updateData,
+                    lastUpdated: moment().tz("Asia/Manila").format('YYYY-MM-DD HH:mm:ss'),
+                    ...(updateData.status === 'published' && { publishedAt: moment().tz("Asia/Manila").format('YYYY-MM-DD HH:mm:ss') })
+                }
+            },
+            {
+                new: true, // Return the updated document
+                runValidators: true // Ensure schema validations are applied
+            }
+        );
+
+        if (!updatedArticle) {
+            return res.status(404).json({ message: 'Article not found' });
+        }
+
+        res.status(200).json({
+            message: 'Article updated successfully',
+            data: updatedArticle
+        });
+    } catch (error) {
+        console.error('Error updating article:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'Article slug must be unique' });
+        }
+        res.status(500).json({ message: 'Server error while updating article' });
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
 // Export the functions
-module.exports = { getLandingArticles, createLandingArticle };
+module.exports = { getLandingArticles, createLandingArticle, updateLandingArticle };
