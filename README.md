@@ -4,6 +4,10 @@ For our generalize hotel management this repository contains backend infrastruct
 
 Language: JavaScript
 
+## Existing project (Unfinished god damn haha)
+- For desktop-based version [see our desktop.](https://github.com/itgauy/GEN-HOTEL-VB)
+- For web-based version [see our desktop.](https://github.com/itgauy/GEN-HOTEL-REACT)
+
 ## How to install and run?
 
 ```powershell
