@@ -483,10 +483,10 @@ functions:
     handler: lateSchedule.handler
     timeout: 28
     events:
-      - schedule: cron(0 */3 * * ? *)
+      - schedule: cron(0 0 ? * 1 *)
 
   deleteScheduledFiles:
     handler: queueSchedule.handler
     timeout: 28
     events:
-      - schedule: cron(0 */3 * * ? *)
+      - schedule: cron(0 0 ? * 1 *)
