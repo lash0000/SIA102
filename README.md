@@ -1,4 +1,7 @@
-## AWS MongoDB Infrastructure
+> [!NOTE]
+> At this moment the development is still ongoing so it has very bad security measure anyway.
+
+## AWS Lambda x MongoDB
 
 For our generalize hotel management this repository contains backend infrastructure deployed with AWS MongoDB, AWS Lambda, AWS S3 (alternative) and sooner we will use AWS SNS or AWS SQS if applicable sooner.
 
